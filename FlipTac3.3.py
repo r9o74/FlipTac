@@ -30,7 +30,7 @@
 
      CPU戦   >>>  n = 1
 '''
-n = 1
+n = 4
 
 # 盤面の大きさ( size x size )
 size = 5
@@ -251,6 +251,8 @@ def update_board():
                 color = '#f6ad49'
             elif board[row][col] == "Δ":
                 color = '#fef263'
+            elif board[row][col] == "#":
+                color = "#ff7ff9"
             elif board[row][col] is None and is_valid_move(marks[current_player_idx], row, col):
                 color = '#b8d200' if darkmode == 1 else '#99ff99'
             else:
@@ -267,6 +269,8 @@ def update_board():
                         color = '#f08300'
                     elif player == "Δ":
                         color = '#ffd900'
+                    elif player == "#":
+                        color = "#eb3aff"
                     buttons[lr * size + lc].config(bg=color)
 
 
