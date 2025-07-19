@@ -30,7 +30,7 @@
 
      CPU戦   >>>  n = 1
 '''
-n = 3
+n = 1
 
 # 盤面の大きさ( size x size )
 size = 5
@@ -122,7 +122,7 @@ def button_click(row, col):
         settle()
 
         # COMの手番
-        if n == 1 and current_player_idx == 1:            
+        if n == 1 and current_player_idx == 0:            
             cpu_move()
 
 
@@ -173,17 +173,17 @@ def cpu_move():
             wait = False
 
     if cpu_move_count < 3:
-        empty = []
+        empty_tiles = []
         for row in range(size):
             for col in range(size):
                 if board[row][col] == None and is_valid_move(marks[current_player_idx], row, col):
-                    empty.append((row,col))
-        row, col = random.choice(empty)
+                    empty_tiles.append((row,col))
+        row, col = random.choice(empty_tiles)
     else:
         row, col = shortest()
 
-    board[row][col] = "O"
-    last_move["O"] = (row, col)
+    board[row][col] = "X"
+    last_move["X"] = (row, col)
     cpu_move_count += 1
     switch_player()
     update_board()
@@ -281,6 +281,8 @@ for row in range(size):
 
 # メインループ
 update_board()
+if n == 1:
+    cpu_move()
 root.mainloop()
 
 
