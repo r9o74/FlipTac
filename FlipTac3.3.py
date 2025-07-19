@@ -30,10 +30,10 @@
 
      CPU戦   >>>  n = 1
 '''
-n = 1
+n = 3
 
 # 盤面の大きさ( size x size )
-size = 7
+size = 5
 
 # ダークモード(1で有効)
 darkmode = 1
@@ -63,22 +63,28 @@ root.title('FlipTac')
 # 定数設定
 buttons = []
 board = [[None for _ in range(size)] for _ in range(size)]
-players = ["X", "O", "Δ"]  
+marks = ["X", "O", "Δ", "#"]
+invalid_marks = []
 current_player_idx = 0
-last_move = {player: None for player in players}
+last_move = {player: None for player in marks}
 cpu_move_count = 0
+
+
+if n <= 3:
+    invalid_marks.append("#")
+    if n <= 2:
+        invalid_marks.append("Δ")
+
 
 
 
 # プレイヤーの切り替え関数
 def switch_player():
     global current_player_idx
-    if n == 1 or n == 2:
-        current_player_idx = 1 if current_player_idx == 0 else 0
-    else:
-        current_player_idx = (current_player_idx + 1) % len(players)
-        while players[current_player_idx] not in players:
-            current_player_idx = (current_player_idx + 1) % len(players)
+    
+    current_player_idx = (current_player_idx + 1) % len(marks)
+    while marks[current_player_idx] in invalid_marks:
+        current_player_idx = (current_player_idx + 1) % len(marks)
 
 
 # 移動check
@@ -107,7 +113,7 @@ def is_valid_move(player, row, col):
 # ボタンがクリックされた時の処理
 def button_click(row, col):
     global current_player_idx
-    player = players[current_player_idx]
+    player = marks[current_player_idx]
     if board[row][col] is None and is_valid_move(player, row, col):
         board[row][col] = player
         last_move[player] = (row, col)
@@ -131,19 +137,16 @@ def check_no_moves(player):
 
 # 勝利判定
 def settle():
-    if check_no_moves(players[current_player_idx]):
-        if n == 1 or n == 2:
+    if check_no_moves(marks[current_player_idx]):
+        invalid_marks.append(marks[current_player_idx])
+        if len(invalid_marks) == 3:
             switch_player()
-            winner = players[current_player_idx]
+            winner = marks[current_player_idx]
             display_winner(winner)
         else:
-            players.pop(current_player_idx)
-            if len(players) == 1:
-                winner = players[0]
-                display_winner(winner)
-            else:
-                switch_player()
-                settle()
+            switch_player()
+            update_board()
+            settle()
 
 
 # 勝利画面
@@ -173,7 +176,7 @@ def cpu_move():
         empty = []
         for row in range(size):
             for col in range(size):
-                if board[row][col] == None and is_valid_move(players[current_player_idx], row, col):
+                if board[row][col] == None and is_valid_move(marks[current_player_idx], row, col):
                     empty.append((row,col))
         row, col = random.choice(empty)
     else:
@@ -190,13 +193,14 @@ def cpu_move():
 # 最短距離の手を計算する関数
 def shortest():
     opponent = "O" if current_player_idx == 0 else "X"
-    valid_moves = [(row, col) for row in range(size) for col in range(size) if board[row][col] is None and is_valid_move(players[current_player_idx], row, col)]
+    valid_moves = [(row, col) for row in range(size) for col in range(size)
+                   if board[row][col] is None and is_valid_move(marks[current_player_idx], row, col)]
     if valid_moves:
         move_counts = []
         for move in valid_moves:
             row, col = move
-            board[row][col] = players[current_player_idx]
-            last_move[players[current_player_idx]] = (row, col)
+            board[row][col] = marks[current_player_idx]
+            last_move[marks[current_player_idx]] = (row, col)
             move_count = count_valid_moves(opponent)
             move_counts.append((move_count, move))
             board[row][col] = None
@@ -247,14 +251,14 @@ def update_board():
                 color = '#f6ad49'
             elif board[row][col] == "Δ":
                 color = '#fef263'
-            elif board[row][col] is None and is_valid_move(players[current_player_idx], row, col):
+            elif board[row][col] is None and is_valid_move(marks[current_player_idx], row, col):
                 color = '#b8d200' if darkmode == 1 else '#99ff99'
             else:
                 color = '#2e2930' if darkmode == 1 else '#fdeffb'
             buttons[row * size + col].config(bg=color)
 
             # 最後に置かれたマークの色を変更
-            for player in players:
+            for player in marks:
                 if last_move[player]:
                     lr, lc = last_move[player]
                     if player == "X":
