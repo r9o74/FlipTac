@@ -28,6 +28,11 @@ let cpu_move_count = 0;
 const bgm = new Audio('BGM.mp3');
 bgm.loop = true;
 const winSound = new Audio('win.mp3');
+const startSound = new Audio('start_game.mp3')
+const buttonSound = new Audio('push_button.mp3')
+const markSound = new Audio('mark.mp3')
+
+
 
 
 // --- イベントリスナー ---
@@ -58,6 +63,7 @@ playerButtons.forEach(button => {
 function startGame() {
     // 1. メニューから設定値を取得し、グローバル変数に格納
     size = parseInt(sizeInput.value, 10);
+    startSound.play()
 
     // 2. 画面をメニューからゲームへ切り替える
     menuScreen.style.display = 'none';
@@ -151,6 +157,7 @@ function updateBoard() {
 }
 
 function button_click(row, col) {
+    markSound.play()
     if (n === 1 && marks[current_player_idx] === 'X') return;
     const player = marks[current_player_idx];
     if (board[row][col] === null && isValidMove(player, row, col)) {
@@ -324,6 +331,7 @@ function displayWinner(winner) {
 
 
 function replayGame() {
+    buttonSound.play();
     // 勝利画面を非表示にする
     winnerDisplay.style.display = 'none';
     // 現在の設定（n, size）のままゲームを再初期化
@@ -331,6 +339,7 @@ function replayGame() {
 }
 
 function returnToMenu() {
+    buttonSound.play();
     // 勝利画面とゲーム画面全体を非表示にする
     winnerDisplay.style.display = 'none';
     gameScreen.style.display = 'none';
