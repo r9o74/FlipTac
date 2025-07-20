@@ -1,63 +1,205 @@
+/* --- 基本設定とページレイアウト --- */
+html {
+    height: 100%;
+}
+
 body {
+    height: 100%;
+    margin: 0;
     font-family: 'Bahnschrift', sans-serif;
+    background-color: #2e2930;
+    color: #fdeffb;
+    
+    /* ページ全体をグリッドにして、コンテンツを中央に配置する */
+    display: grid;
+    place-items: center;
+}
+
+/* --- メニュー画面 --- */
+#menu-screen {
     display: flex;
     flex-direction: column;
-    justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #2e2930; /* ダークモードの背景色 */
-    color: #fdeffb;
+    gap: 20px;
+    background-color: #3a3440;
+    padding: 30px 40px;
+    border-radius: 15px;
+}
+
+#menu-screen h1 {
+    margin: 0;
+    font-family: "Showcard Gothic", sans-serif;
+    font-size: 70px;
+    font-weight: lighter;
+    color: #f692ff;
+    transition: 0.1s;
+}
+
+.small_x {
+    font-size: 0.6em;
+}
+
+#menu-screen h1:hover {
+    transform: scale(1.02); 
+}
+
+.settings {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 1.2em;
+}
+
+#players-input, #size-input {
+    font-size: 1em;
+    padding: 5px;
+    border-radius: 5px;
+    border: 1px solid #777;
+}
+
+#size-input {
+    width: 50px;
+}
+
+#start-button {
+    font-size: 1.2em;
+    padding: 10px 20px;
+    cursor: pointer;
+    background-color: #e56fff;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.2s;
+    transition: transform 0.2s;
+}
+
+#start-button:hover {
+    background-color: #d931ff;
+    transform: scale(1.05);
+}
+
+#players-selection-buttons {
+    display: flex;
+    gap: 5px; /* ボタン同士の間隔 */
+}
+
+.player-btn {
+    padding: 5px 10px;
+    border: 2px solid #777;
+    background-color: #555;
+    color: #eee;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.player-btn.active {
+    background-color: #b753c0; /* アクティブなボタンの色 */
+    color: #fff;
+    border-color: #ae04b1;
+}
+
+
+
+/* --- ゲーム画面 --- */
+#game-screen {
+    /* このコンテナはJSで表示/非表示を切り替える */
+    width: 90vmin;
+    max-width: 500px;
 }
 
 #game-board {
     display: grid;
-    /* グリッドの列と行の数はJavaScriptで設定します */
     border: 2px solid #555;
+    /* 常に正方形を保つ */
+    aspect-ratio: 1 / 1; 
+
+    /* JSから受け取る変数(--board-size)を使って、縦横の分割数を決める */
+    grid-template-columns: repeat(var(--board-size, 5), 1fr);
+    grid-template-rows: repeat(var(--board-size, 5), 1fr);
 }
 
 .cell {
-    width: 80px;
-    height: 80px;
     border: 1px solid #444;
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 48px;
     cursor: pointer;
-    background-color: #2e2930; /* デフォルトのセルの色 */
+    background-color: #2e2930;
+    font-weight: bold;
+    -webkit-user-select: none; /* テキスト選択を無効化 */
+    user-select: none;
 }
 
-/* 駒の色 */
-.cell.X { background-color: #89c3eb; color: #fff; }
-.cell.O { background-color: #f6ad49; color: #fff; }
-.cell.Δ { background-color: #fef263; color: #000; }
-.cell.hash { background-color: #ff7ff9; color: #fff; }
+/* --- 駒とマスの色 --- */
+.cell.X { background-color: #89c3eb; color: #2e2e2e; }
+.cell.O { background-color: #f6ad49; color: #2e2e2e; }
+.cell.Δ { background-color: #fef263; color: #2e2e2e; }
+.cell.hash { background-color: #ff7ff9; color: #2e2e2e; }
 
-/* 最後に置かれた駒の色 */
 .cell.last-X { background-color: #2ca9e1; }
 .cell.last-O { background-color: #f08300; }
 .cell.last-Δ { background-color: #ffd900; }
 .cell.last-hash { background-color: #eb3aff; }
 
-/* 配置可能なマスの色 */
 .cell.valid-move {
     background-color: #b8d200;
 }
 
-/* 勝者表示のスタイル */
+/* --- 勝利画面 --- */
 #winner-display {
+    /* 絶対配置でゲーム盤の中央に重ねる */
     position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    flex-direction: column;
     width: 300px;
     height: 150px;
-    background-color: #dbd0e6;
+    background-color: rgba(219, 208, 230, 0.9); /* 少し透明にする */
     color: #2b2b2b;
     display: flex;
     justify-content: center;
     align-items: center;
+    font-family: "Showcard Gothic", sans-serif;
     font-size: 50px;
     border-radius: 10px;
 }
 
-.hidden {
-    display: none !important;
+
+
+.winner-options {
+    margin-top: 15px;
+    display: flex;
+    gap: 15px; /* ボタン同士の間隔 */
+}
+
+.win-btn {
+    padding: 8px 16px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+    color: rgb(50, 50, 50);
+    transition: transform 0.2s;
+}
+
+.win-btn:hover {
+    transform: scale(1.05); /* マウスを乗せると少し拡大 */
+}
+
+#replay-button {
+    background-color: #ffbdfe;
+}
+
+#change-settings-button {
+    background-color: #bebebe;
 }

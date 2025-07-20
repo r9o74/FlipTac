@@ -7,12 +7,37 @@
     <link rel="stylesheet" href="fliptac_style.css">
 </head>
 <body>
-    <h1>FlipTac</h1>
-    
-    <div id="game-board"></div>
 
-    <div id="winner-display" class="hidden">
-        <div class="winner-text"></div>
+    <div id="menu-screen">
+        <h1>Flip<span class="small_x"> x </span>Tac</h1>
+        <div class="settings">
+
+            <div class="setting-item">
+                <div id="players-selection-buttons">
+                    <button class="player-btn active" data-value="1">CPU戦</button>
+                    <button class="player-btn" data-value="2">2人</button>
+                    <button class="player-btn" data-value="3">3人</button>
+                    <button class="player-btn" data-value="4">4人</button>
+                </div>
+            </div>
+            <div class="setting-item">
+                <label for="size-input">盤面サイズ</label>
+                <input type="number" id="size-input" value="7" min="3" max="20">
+                <span>x</span>
+                <span id="size-display">7</span>
+            </div>
+        </div>
+        <button id="start-button">START</button>
+    </div>
+
+    <div id="game-screen" style="display: none;">
+        <div id="game-board"></div>
+    <div id="winner-display" style="display: none;">
+    <div class="winner-text"></div>
+    <div class="winner-options">
+        <button id="replay-button" class="win-btn">Replay</button>
+        <button id="change-settings-button" class="win-btn">Change Settings</button>
+    </div>
     </div>
 
     <script src="fliptac_script.js"></script>
