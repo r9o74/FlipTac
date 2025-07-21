@@ -138,6 +138,8 @@ body {
     font-weight: bold;
     -webkit-user-select: none; /* テキスト選択を無効化 */
     user-select: none;
+    aspect-ratio: 1 / 1;
+    font-size: calc(90vmin / var(--board-size) * 0.5);
 }
 
 /* --- 駒とマスの色 --- */

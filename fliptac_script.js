@@ -133,7 +133,6 @@ function initializeGame() {
         for (let c = 0; c < size; c++) {
             const cell = document.createElement('div');
             cell.classList.add('cell');
-            cell.style.fontSize = `${fontSize}px`;
             cell.dataset.row = r;
             cell.dataset.col = c;
             cell.addEventListener('click', () => button_click(r, c));
