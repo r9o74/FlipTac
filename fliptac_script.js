@@ -44,6 +44,7 @@ replayButton.addEventListener('click', replayGame);
 changeSettingsButton.addEventListener('click', returnToMenu);
 playerButtons.forEach(button => {
     button.addEventListener('click', () => {
+        buttonSound.play()
         // 1. すべてのボタンから 'active' クラスを削除
         playerButtons.forEach(btn => btn.classList.remove('active'));
 
@@ -64,6 +65,7 @@ function startGame() {
     // 1. メニューから設定値を取得し、グローバル変数に格納
     size = parseInt(sizeInput.value, 10);
     startSound.play()
+    buttonSound.play()
 
     // 2. 画面をメニューからゲームへ切り替える
     menuScreen.style.display = 'none';
