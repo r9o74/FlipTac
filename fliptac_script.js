@@ -11,6 +11,14 @@ const winnerDisplay = document.getElementById('winner-display');
 const winnerText = winnerDisplay.querySelector('.winner-text');
 const replayButton = document.getElementById('replay-button');
 const changeSettingsButton = document.getElementById('change-settings-button');
+const rulesOverlay = document.getElementById('rules-overlay');
+const closeRulesButton = document.getElementById('close-rules-button');
+const showRulesMenuButton = document.getElementById('show-rules-menu-button');
+const showRulesGameButton = document.getElementById('show-rules-game-button');
+const ruleImages = document.querySelectorAll('.rule-image');
+const pageSwitchButtons = document.querySelectorAll('.page-btn');
+
+
 
 // ゲーム設定値
 let n = 1;
@@ -55,6 +63,23 @@ playerButtons.forEach(button => {
         n = parseInt(button.dataset.value, 10);
     });
 });
+showRulesMenuButton.addEventListener('click', showRules);
+showRulesGameButton.addEventListener('click', showRules);
+closeRulesButton.addEventListener('click', hideRules);
+// 背景をクリックしてもルールを閉じる
+rulesOverlay.addEventListener('click', (event) => {
+    if (event.target === rulesOverlay) {
+        hideRules();
+    }
+});
+pageSwitchButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        // クリックされたボタンのdata-pageの値を使って表示を切り替える
+        switchRulePage(button.dataset.page);
+        buttonSound.play()
+    });
+});
+
 
 // --- 関数定義 ---
 
@@ -124,6 +149,29 @@ function initializeGame() {
         setTimeout(cpu_move, 500);
     }
 }
+
+function showRules() {
+    rulesOverlay.classList.remove('hidden');
+    buttonSound.play()
+    switchRulePage("1")
+}
+
+function switchRulePage(targetPage) {
+    ruleImages.forEach(image => {
+        image.classList.toggle('active-image', image.dataset.page === targetPage);
+    });
+    pageSwitchButtons.forEach(button => {
+        button.classList.toggle('active-btn', button.dataset.page === targetPage);
+    });
+}
+
+
+function hideRules() {
+    rulesOverlay.classList.add('hidden');
+    buttonSound.play()
+}
+
+
 
 // ===============================================
 // これ以降は安定動作していたゲームロジックです

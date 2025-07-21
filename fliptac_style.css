@@ -29,7 +29,7 @@ body {
 #menu-screen h1 {
     margin: 0;
     font-family: "Showcard Gothic", sans-serif;
-    font-size: 70px;
+    font-size: 15vw;
     font-weight: lighter;
     color: #f692ff;
     transition: 0.1s;
@@ -68,6 +68,8 @@ body {
 }
 
 #start-button {
+    font-family: "Showcard Gothic", sans-serif;
+    font-weight: 300;
     font-size: 1.2em;
     padding: 10px 20px;
     cursor: pointer;
@@ -144,10 +146,10 @@ body {
 .cell.Δ { background-color: #fef263; color: #2e2e2e; }
 .cell.hash { background-color: #ff7ff9; color: #2e2e2e; }
 
-.cell.last-X { background-color: #2ca9e1; }
-.cell.last-O { background-color: #f08300; }
-.cell.last-Δ { background-color: #ffd900; }
-.cell.last-hash { background-color: #eb3aff; }
+.cell.last-X { background-color: #4aa6f6; color: #e8e8e8 }
+.cell.last-O { background-color: #f37813; color: #e8e8e8 }
+.cell.last-Δ { background-color: #ffd900; color: #2e2e2e }
+.cell.last-hash { background-color: #cc1ddf; color: #e8e8e8 }
 
 .cell.valid-move {
     background-color: #b8d200;
@@ -172,8 +174,6 @@ body {
     font-size: 50px;
     border-radius: 10px;
 }
-
-
 
 .winner-options {
     margin-top: 15px;
@@ -202,4 +202,100 @@ body {
 
 #change-settings-button {
     background-color: #bebebe;
+}
+
+
+#rules-overlay {
+    position: fixed; /* 要素を画面に固定する */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75); /* 半透明の黒い背景 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000; /* 他の要素より手前に表示 */
+}
+
+.rule-image {
+    display: none;
+}
+
+.rule-image.active-image {
+    display: block;
+}
+
+.rule-page-switch {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.page-btn {
+    font-family: "Showcard Gothic", sans-serif;
+    font-weight: 300;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%; /* 円形にする */
+    border: 3px solid #ccc;
+    background-color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.page-btn.active-btn {
+    background-color: #e56fff; /* アクティブなボタンの色 */
+    color: #2e2930;
+    border-color: #ae04b1;
+}
+
+.rules-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.rules-content img {
+    max-width: 90%; /* 画像が画面幅を超えないように */
+    max-height: 80vh; /* 画像が画面の高さを超えないように */
+    border: 2px solid white;
+}
+
+#close-rules-button {
+    font-family: "Showcard Gothic", sans-serif;
+    font-weight: 300;
+    padding: 10px 25px;
+    font-size: 1.1em;
+    cursor: pointer;
+}
+
+/* --- 「ルール説明」ボタン --- */
+.rule-button {
+    margin-top: 10px;
+    padding: 5px 10px;
+    background-color: #6c757d;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.rule-button:hover {
+    background-color: #5a6268;
+    transform: scale(1.05);
+}
+
+/* ゲーム画面のルールボタンの位置調整 */
+#show-rules-game-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    margin-top: 0;
+}
+
+.hidden {
+    display: none !important;
 }
