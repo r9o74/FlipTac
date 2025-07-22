@@ -1,4 +1,4 @@
-// --- グローバル変数とDOM要素の取得 ---
+// グローバル変数とDOM要素の取得
 // HTML要素
 const menuScreen = document.getElementById('menu-screen');
 const gameScreen = document.getElementById('game-screen');
@@ -32,7 +32,7 @@ let current_player_idx = 0;
 let last_move = { "X": null, "O": null, "Δ": null, "#": null };
 let cpu_move_count = 0;
 
-// オーディオ
+// 効果音 & BGM
 const bgm = new Audio('BGM.mp3');
 bgm.loop = true;
 const winSound = new Audio('win.mp3');
@@ -43,7 +43,7 @@ const markSound = new Audio('mark.mp3')
 
 
 
-// --- イベントリスナー ---
+// イベントリスナー
 startButton.addEventListener('click', startGame);
 sizeInput.addEventListener('input', (e) => {
     sizeDisplay.textContent = e.target.value;
@@ -66,7 +66,6 @@ playerButtons.forEach(button => {
 showRulesMenuButton.addEventListener('click', showRules);
 showRulesGameButton.addEventListener('click', showRules);
 closeRulesButton.addEventListener('click', hideRules);
-// 背景をクリックしてもルールを閉じる
 rulesOverlay.addEventListener('click', (event) => {
     if (event.target === rulesOverlay) {
         hideRules();
@@ -74,60 +73,49 @@ rulesOverlay.addEventListener('click', (event) => {
 });
 pageSwitchButtons.forEach(button => {
     button.addEventListener('click', () => {
-        // クリックされたボタンのdata-pageの値を使って表示を切り替える
         switchRulePage(button.dataset.page);
-        buttonSound.play()
+        startSound.play()
     });
 });
 
 
-// --- 関数定義 ---
+// 各種関数定義 
 
-/**
- * [フロー①] ゲーム開始処理
- */
+
 function startGame() {
-    // 1. メニューから設定値を取得し、グローバル変数に格納
     size = parseInt(sizeInput.value, 10);
     startSound.play()
     buttonSound.play()
 
-    // 2. 画面をメニューからゲームへ切り替える
     menuScreen.style.display = 'none';
     gameScreen.style.display = 'block';
 
-    // 3. 取得した設定値でゲームを初期化
     initializeGame();
 }
 
-/**
- * [フロー②] ゲームの初期化処理
- */
+
 function initializeGame() {
-    // 初回クリック時にBGMを再生
     document.body.addEventListener('click', () => bgm.play(), { once: true });
     
-    // ゲーム状態をリセット
+    // ゲーム状態のリセット
     invalid_marks = [];
     last_move = { "X": null, "O": null, "Δ": null, "#": null };
     current_player_idx = 0;
     cpu_move_count = 0;
     winnerDisplay.style.display = 'none';
     
-    // 参加しないプレイヤーを設定
+    // 使用しないor敗退済みのマーク
     if (n <= 3) invalid_marks.push("#");
     if (n <= 2) invalid_marks.push("Δ");
     
-    // 盤面データ配列を生成
+    // 盤面データ配列
     board = Array(size).fill(null).map(() => Array(size).fill(null));
     
-    // CSSに盤面のサイズを伝える
     boardElement.style.setProperty('--board-size', size);
     
-    // 盤面サイズに応じたフォントサイズを計算
     const fontSize = Math.floor(450 / size / 2);
 
-    // ゲーム盤のマス目を生成
+    // 盤のマス目
     boardElement.innerHTML = '';
     for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
@@ -143,7 +131,7 @@ function initializeGame() {
     // 初回盤面更新
     updateBoard();
 
-    // CPU戦の場合、CPUの最初のターンを開始
+    // CPU戦の場合はCPU先攻
     if (n === 1) {
         setTimeout(cpu_move, 500);
     }
@@ -152,6 +140,7 @@ function initializeGame() {
 function showRules() {
     rulesOverlay.classList.remove('hidden');
     buttonSound.play()
+    startSound.play()
     switchRulePage("1")
 }
 
@@ -172,9 +161,9 @@ function hideRules() {
 
 
 
-// ===============================================
-// これ以降は安定動作していたゲームロジックです
-// ===============================================
+// ゲームループ
+// やっと動作安定したから変更最小限で
+// 変数名分かりにくいから次回以降気をつける
 
 function updateBoard() {
     const currentPlayer = marks[current_player_idx];
@@ -375,23 +364,19 @@ function displayWinner(winner) {
     else {
         winnerText.textContent = `${winner} wins!`;
     }
-    winnerDisplay.style.display = 'flex'; // blockではなくflexに変更すると中央揃えが効きやすい
+    winnerDisplay.style.display = 'flex'; // ここflexにしとくと中央揃えが効きやすいらしい
 }
 
 
 function replayGame() {
     buttonSound.play();
-    // 勝利画面を非表示にする
     winnerDisplay.style.display = 'none';
-    // 現在の設定（n, size）のままゲームを再初期化
     initializeGame();
 }
 
 function returnToMenu() {
     buttonSound.play();
-    // 勝利画面とゲーム画面全体を非表示にする
     winnerDisplay.style.display = 'none';
     gameScreen.style.display = 'none';
-    // メニュー画面を表示する
     menuScreen.style.display = 'flex';
 }
