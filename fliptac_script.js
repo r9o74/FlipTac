@@ -1,3 +1,6 @@
+import { cpu_move_lv2 } from './cpu_logic_fliptac_lv2.js';
+
+
 // グローバル変数とDOM要素の取得
 // HTML要素
 const menuScreen = document.getElementById('menu-screen');
@@ -206,37 +209,35 @@ function button_click(row, col) {
         settle();
         let activePlayers = marks.filter(m => !invalid_marks.includes(m));
         if (n === 1 && marks[current_player_idx] === 'X' && activePlayers.length > 1) {
-            setTimeout(cpu_move, 500);
+            setTimeout(cpu_move_lv1, 500);
         }
     }
 }
 
+
 function cpu_move() {
-    let bestMove;
     const cpuMark = "X";
-    if (cpu_move_count < 3) {
-        const empty_tiles = [];
-        for (let r = 0; r < size; r++) {
-            for (let c = 0; c < size; c++) {
-                if (board[r][c] === null && isValidMove(cpuMark, r, c)) {
-                    empty_tiles.push([r, c]);
-                }
-            }
-        }
-        if (empty_tiles.length > 0) {
-            bestMove = empty_tiles[Math.floor(Math.random() * empty_tiles.length)];
-        }
-    } else {
-        bestMove = shortest();
-    }
+    const opponentMark = "O"; // CPU戦は2人用なので相手は'O'で固定
+
+        // 新しい思考ルーチンで最善手を探す
+    const bestMove = cpu_move_lv2(board, cpuMark, opponentMark, last_move, size);
+
     if (bestMove) {
         const [row, col] = bestMove;
         board[row][col] = cpuMark;
         last_move[cpuMark] = [row, col];
-        cpu_move_count++;
+            
+        // cpu_move_count はもう不要なので、関連する行は削除してもOK
+        // cpu_move_count++; 
+        
         switch_player();
         updateBoard();
         settle();
+    } else {
+        // CPUが打つ手がない場合（基本的には発生しないはず）
+        console.log("CPU has no valid moves.");
+        // 必要であれば、ここでパスの処理や敗北処理を呼び出す
+        settle(); 
     }
 }
 
@@ -296,46 +297,6 @@ function settle() {
     }
 }
 
-function shortest() {
-    const cpuMark = 'X';
-    const opponentMark = 'O';
-    const validMoves = [];
-    for (let r = 0; r < size; r++) {
-        for (let c = 0; c < size; c++) {
-            if (board[r][c] === null && isValidMove(cpuMark, r, c)) {
-                validMoves.push([r, c]);
-            }
-        }
-    }
-    if (validMoves.length === 0) return null;
-    let move_counts = [];
-    for (const move of validMoves) {
-        const [r, c] = move;
-        board[r][c] = cpuMark;
-        const original_last_move = last_move[cpuMark];
-        last_move[cpuMark] = move;
-        const opponentMoveCount = count_valid_moves(opponentMark);
-        move_counts.push({ count: opponentMoveCount, move: move });
-        board[r][c] = null;
-        last_move[cpuMark] = original_last_move;
-    }
-    const minMoves = Math.min(...move_counts.map(mc => mc.count));
-    const bestMoves = move_counts.filter(mc => mc.count === minMoves).map(mc => mc.move);
-    if (bestMoves.length === 1) return bestMoves[0];
-    let bestMoveShortest = null;
-    let min_dist = Infinity;
-    const last_opponent_move = last_move[opponentMark];
-    if (!last_opponent_move) return bestMoves[0];
-    for (const move of bestMoves) {
-        const [r, c] = move;
-        const dist = Math.pow(last_opponent_move[0] - r, 2) + Math.pow(last_opponent_move[1] - c, 2);
-        if (dist < min_dist) {
-            min_dist = dist;
-            bestMoveShortest = move;
-        }
-    }
-    return bestMoveShortest;
-}
 
 function count_valid_moves(player) {
     let count = 0;
