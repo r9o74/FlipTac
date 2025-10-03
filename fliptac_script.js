@@ -1,7 +1,8 @@
-import { cpu_move_lv2 } from './cpu_logic_fliptac_lv2.js';
+import { cpu_logic_lv2 } from './cpu_logic_lv2_fliptac.js';
 
 
 // グローバル変数とDOM要素の取得
+
 // HTML要素
 const menuScreen = document.getElementById('menu-screen');
 const gameScreen = document.getElementById('game-screen');
@@ -220,7 +221,7 @@ function cpu_move() {
     const opponentMark = "O"; // CPU戦は2人用なので相手は'O'で固定
 
         // 新しい思考ルーチンで最善手を探す
-    const bestMove = cpu_move_lv2(board, cpuMark, opponentMark, last_move, size);
+    const bestMove = cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size);
 
     if (bestMove) {
         const [row, col] = bestMove;
