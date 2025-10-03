@@ -1,1 +1,0 @@
-print("\033[34mThis is blue text\033[0m" + " and this is normal text.")
