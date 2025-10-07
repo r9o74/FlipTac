@@ -239,7 +239,7 @@ function button_click(row, col) {
         settle();
         let activePlayers = marks.filter(m => !invalid_marks.includes(m));
         if (n === 1 && marks[current_player_idx] === 'X' && activePlayers.length > 1) {
-            setTimeout(cpu_move, 500);
+            setTimeout(() => cpu_move(), 500);
         }
     }
 }
@@ -411,9 +411,6 @@ async function cpu_move() {
     const opponentMark = "O";
     let bestMove; // 変更点: 関数スコープで変数を宣言
 
-    if (cpu_level === 3) {
-        bestMove = await cpu_logic_lv3(board, cpuMark, opponentMark, last_move, size);
-    } else {
         if (cpu_move_count === 0) {
             const initial_place = randomInt(0, (size * 4) - 5);
             if (initial_place < size) {
@@ -430,9 +427,11 @@ async function cpu_move() {
                 bestMove = cpu_logic_lv1(board, cpuMark, opponentMark, last_move, size);
             } else if (cpu_level === 2) {
                 bestMove = cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size);
+            } else if (cpu_level === 3) {
+                bestMove = await cpu_logic_lv3(board, cpuMark, opponentMark, last_move, size);
             }
         }
-    }
+
 
     if (bestMove) {
         const [row, col] = bestMove;
