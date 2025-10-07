@@ -411,24 +411,27 @@ async function cpu_move() {
     const opponentMark = "O";
     let bestMove; // 変更点: 関数スコープで変数を宣言
 
-    if (cpu_move_count === 0) {
-        const initial_place = randomInt(0, (size * 4) - 5);
-        if (initial_place < size) {
-            bestMove = [0, initial_place];
-        } else if (initial_place < (size * 2) - 1) {
-            bestMove = [initial_place - size + 1, size - 1];
-        } else if (initial_place < (size * 3) - 2) {
-            bestMove = [size - 1, size - (initial_place - (size*2) + 3)];
-        } else {
-            bestMove = [size - (initial_place - (size*3) + 4), 0];
-        }
+    if (cpu_level === 3) {
+        bestMove = await cpu_logic_lv3(board, cpuMark, opponentMark, last_move, size);
     } else {
-        if (cpu_level === 1) {
-            bestMove = cpu_logic_lv1(board, cpuMark, opponentMark, last_move, size);
-        } else if (cpu_level === 2) {
-            bestMove = cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size);
+        if (cpu_move_count === 0) {
+            const initial_place = randomInt(0, (size * 4) - 5);
+            if (initial_place < size) {
+                bestMove = [0, initial_place];
+            } else if (initial_place < (size * 2) - 1) {
+                bestMove = [initial_place - size + 1, size - 1];
+            } else if (initial_place < (size * 3) - 2) {
+                bestMove = [size - 1, size - (initial_place - (size*2) + 3)];
+            } else {
+                bestMove = [size - (initial_place - (size*3) + 4), 0];
+            }
+        } else {
+            if (cpu_level === 1) {
+                bestMove = cpu_logic_lv1(board, cpuMark, opponentMark, last_move, size);
+            } else if (cpu_level === 2) {
+                bestMove = cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size);
+            }
         }
-
     }
 
     if (bestMove) {
