@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FlipTac</title>
     <link rel="stylesheet" href="fliptac_style.css">
+    <script src="https://cdn.jsdelivr.net/npm/onnxruntime-web/dist/ort.min.js"></script>
 </head>
 <body>
     <main>
@@ -24,6 +25,7 @@
                     <div id="cpu-selection-buttons">
                         <button class="level-btn active" data-level="1">Lv.1</button>
                         <button class="level-btn" data-level="2">Lv.2</button>
+                        <button class="level-btn" data-level="3">Lv.3</button>
                     </div>
                 </div>
 
@@ -69,7 +71,6 @@
         </div>
     </div>
 
-    <!-- 変更点: type="module" を削除し、defer属性を追加したこの1行のみにする -->
     <script src="fliptac_script.js" defer></script>
 
 </body>

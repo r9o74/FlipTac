@@ -36,6 +36,7 @@ let current_player_idx = 0;
 let last_move = { "X": null, "O": null, "Δ": null, "#": null };
 let cpu_move_count = 0;
 let cpu_level = 1;
+let onnxSession;
 
 // 効果音 & BGM
 const bgm = new Audio('BGM.mp3');
@@ -104,10 +105,20 @@ levelSwitchButtons.forEach(button => {
 // 各種関数定義 
 
 
-function startGame() {
+async function startGame() {
     size = parseInt(sizeInput.value, 10);
     startSound.play()
     buttonSound.play()
+
+    if (n === 1 && cpu_level === 3 && !onnxSession) {
+        try {
+            onnxSession = await ort.InferenceSession.create('./fliptac_model.onnx');
+        } catch (error) {
+            console.error("ONNX Runtime error:", error);
+            alert("Failed to load AI model. Please try again.");
+            return;
+        }
+    }
 
     menuScreen.style.display = 'none';
     gameScreen.style.display = 'block';
@@ -338,11 +349,64 @@ function cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size) {
     return bestMove || validMoves[Math.floor(Math.random() * validMoves.length)];
 }
 
+async function cpu_logic_lv3(board, cpuMark, opponentMark, last_move, size) {
+    if (!onnxSession) {
+        console.error("ONNXセッションが初期化されていません。");
+        return null;
+    }
+
+    // 1. 現在の盤面をモデルの入力形式（テンソル）に変換する
+    const myPlayerId = 1; // AIは常に1
+    const opponentPlayerId = -1;
+    const inputTensor = new Float32Array(3 * size * size);
+    
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            const index = r * size + c;
+            const piece = board[r][c]; // 'X' or 'O' or null
+            
+            // Channel 0: 自分の石
+            if (piece === cpuMark) inputTensor[index] = 1.0;
+            // Channel 1: 相手の石
+            if (piece === opponentMark) inputTensor[size * size + index] = 1.0;
+        }
+    }
+    // Channel 2: 現在のプレイヤーID (AIのターンなので全面1)
+    for (let i = 0; i < size * size; i++) {
+        inputTensor[2 * size * size + i] = myPlayerId;
+    }
+
+    const tensor = new ort.Tensor('float32', inputTensor, [1, 3, size, size]);
+    const feeds = { 'input': tensor };
+
+    // 2. モデルで推論を実行
+    const results = await onnxSession.run(feeds);
+    const qValues = results.output.data;
+
+    // 3. 有効な手の中から、Q値が最大の手を見つける
+    const validMoves = [];
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            if (isValidMove(cpuMark, r, c)) {
+                validMoves.push({ move: [r, c], q: qValues[r * size + c] });
+            }
+        }
+    }
+
+    if (validMoves.length === 0) {
+        return null;
+    }
+
+    // Q値でソートして最善手を選ぶ
+    validMoves.sort((a, b) => b.q - a.q);
+    return validMoves[0].move;
+}
+
 function randomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function cpu_move() {
+async function cpu_move() {
     const cpuMark = "X";
     const opponentMark = "O";
     let bestMove; // 変更点: 関数スコープで変数を宣言

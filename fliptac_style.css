@@ -127,6 +127,21 @@ body {
     border-color: #ae04b1;
 }
 
+.level-btn[data-level="3"].active {
+    background-color: #c05353;
+    border-color: #ae0404;
+    animation: glow 1.5s infinite alternate;
+}
+
+@keyframes glow {
+    from {
+        box-shadow: 0 0 5px #ff5555;
+    }
+    to {
+        box-shadow: 0 0 20px #ff5555, 0 0 30px #ff8c8c;
+    }
+}
+
 #cpu-level-container.disabled {
     opacity: 0.5;
     pointer-events: none;
