@@ -221,7 +221,15 @@ function cpu_move() {
     const opponentMark = "O"; // CPU戦は2人用なので相手は'O'で固定
 
         // 新しい思考ルーチンで最善手を探す
-    const bestMove = cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size);
+    const bestMove = cpu_logic_lv2(
+        board,
+        cpuMark,
+        opponentMark,
+        last_move,
+        size,
+        isValidMove,
+        count_valid_moves
+    );
 
     if (bestMove) {
         const [row, col] = bestMove;
