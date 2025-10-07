@@ -11,7 +11,6 @@
         <div id="menu-screen">
             <h1>Flip<span class="small_x"> x </span>Tac</h1>
             <div class="settings">
-
                 <div class="setting-item">
                     <div id="players-selection-buttons">
                         <button class="player-btn active" data-value="1">CPU戦</button>
@@ -20,6 +19,14 @@
                         <button class="player-btn" data-value="4">4人</button>
                     </div>
                 </div>
+                <div class="setting-item" id="cpu-level-container">
+                    <label>CPU強さ</label>
+                    <div id="cpu-selection-buttons">
+                        <button class="level-btn active" data-level="1">Lv.1</button>
+                        <button class="level-btn" data-level="2">Lv.2</button>
+                    </div>
+                </div>
+
                 <div class="setting-item">
                     <label for="size-input">盤面サイズ</label>
                     <input type="number" id="size-input" value="7" min="3" max="20">
@@ -28,22 +35,21 @@
                 </div>
             </div>
             <button id="start-button">START</button>
-            <button id="show-rules-menu-button" class="rule-button">ルール説明</button> </div>
-
+            <button id="show-rules-menu-button" class="rule-button">ルール説明</button>
         </div>
 
         <div id="game-screen" style="display: none;">
             <div class="entire-board">
                 <button id="show-rules-game-button" class="rule-button">ルール説明</button>
-                <div id="game-board">
-                    </div>
+                <div id="game-board"></div>
             </div>           
             <div id="winner-display" style="display: none;">
-        <div class="winner-text"></div>
-        <div class="winner-options">
-            <button id="replay-button" class="win-btn">Replay</button>
-            <button id="change-settings-button" class="win-btn">Change Settings</button>
-        </div>
+                <div class="winner-text"></div>
+                <div class="winner-options">
+                    <button id="replay-button" class="win-btn">Replay</button>
+                    <button id="change-settings-button" class="win-btn">Change Settings</button>
+                </div>
+            </div>
         </div>
     </main>
 
@@ -63,8 +69,9 @@
         </div>
     </div>
 
-    <!-- 変更点: scriptタグをこの一行だけにする -->
-    <script type="module" src="fliptac_script.js"></script>
+    <!-- 変更点: type="module" を削除し、defer属性を追加したこの1行のみにする -->
+    <script src="fliptac_script.js" defer></script>
 
 </body>
 </html>
+

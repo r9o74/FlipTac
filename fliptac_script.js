@@ -1,4 +1,3 @@
-import { cpu_logic_lv2 } from './cpu_logic_lv2_fliptac.js';
 
 
 // グローバル変数とDOM要素の取得
@@ -21,7 +20,8 @@ const showRulesMenuButton = document.getElementById('show-rules-menu-button');
 const showRulesGameButton = document.getElementById('show-rules-game-button');
 const ruleImages = document.querySelectorAll('.rule-image');
 const pageSwitchButtons = document.querySelectorAll('.page-btn');
-
+const levelSwitchButtons = document.querySelectorAll('.level-btn');
+const cpuLevelContainer = document.getElementById('cpu-level-container');
 
 
 // ゲーム設定値
@@ -35,6 +35,7 @@ let invalid_marks = [];
 let current_player_idx = 0;
 let last_move = { "X": null, "O": null, "Δ": null, "#": null };
 let cpu_move_count = 0;
+let cpu_level = 1;
 
 // 効果音 & BGM
 const bgm = new Audio('BGM.mp3');
@@ -65,7 +66,14 @@ playerButtons.forEach(button => {
 
         // 3. data-value属性から値を取得し、変数nを更新
         n = parseInt(button.dataset.value, 10);
-    });
+
+        if (n===1) {
+            cpuLevelContainer.classList.remove('disabled');
+        } else {
+            cpuLevelContainer.classList.add('disabled');
+        }
+           });
+    buttonSound.play();
 });
 showRulesMenuButton.addEventListener('click', showRules);
 showRulesGameButton.addEventListener('click', showRules);
@@ -81,6 +89,16 @@ pageSwitchButtons.forEach(button => {
         startSound.play()
     });
 });
+levelSwitchButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        if (cpuLevelContainer.classList.contains('disabled')) return;
+        
+        cpu_level = parseInt(button.dataset.level, 10);
+        buttonSound.play();
+        levelSwitchButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+    })
+})
 
 
 // 各種関数定義 
@@ -203,51 +221,164 @@ function button_click(row, col) {
     if (n === 1 && marks[current_player_idx] === 'X') return;
     const player = marks[current_player_idx];
     if (board[row][col] === null && isValidMove(player, row, col)) {
-        board[row][col] = player;
+        board[row][col] = player
         last_move[player] = [row, col];
         switch_player();
         updateBoard();
         settle();
         let activePlayers = marks.filter(m => !invalid_marks.includes(m));
         if (n === 1 && marks[current_player_idx] === 'X' && activePlayers.length > 1) {
-            setTimeout(cpu_move_lv1, 500);
+            setTimeout(cpu_move, 500);
         }
     }
 }
 
 
+let boardValuesCache = {};
+
+function generateBoardValues(size) {
+    if (boardValuesCache[size]) {
+        return boardValuesCache[size];
+    }
+    const values = Array(size).fill(null).map(() => Array(size).fill(0));
+    const center = (size - 1) / 2;
+    let maxValue = 0;
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            const dist = Math.sqrt(Math.pow(r - center, 2) + Math.pow(c - center, 2));
+            values[r][c] = Math.round(10 * (center - dist));
+            if (values[r][c] > maxValue) maxValue = values[r][c];
+        }
+    }
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            values[r][c] = Math.max(0, values[r][c] + Math.abs(maxValue-20));
+        }
+    }
+    boardValuesCache[size] = values;
+    return values;
+}
+
+
+function cpu_logic_lv1(board, cpuMark, opponentMark, last_move, size) {
+    const validMoves = [];
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            if (board[r][c] === null && isValidMove(cpuMark, r, c)) {
+                validMoves.push([r, c]);
+            }
+        }
+    }
+    if (validMoves.length === 0) return null;
+
+    let move_counts = [];
+    for (const move of validMoves) {
+        const [r, c] = move;
+        board[r][c] = cpuMark;
+        const original_last_move = last_move[cpuMark];
+        last_move[cpuMark] = move;
+        const opponentMoveCount = count_valid_moves(opponentMark);
+        move_counts.push({ count: opponentMoveCount, move: move });
+        board[r][c] = null;
+        last_move[cpuMark] = original_last_move;
+    }
+
+    const minMoves = Math.min(...move_counts.map(mc => mc.count));
+    const bestMoves = move_counts.filter(mc => mc.count === minMoves).map(mc => mc.move);
+    if (bestMoves.length === 1) return bestMoves[0];
+    
+    let bestMoveShortest = null;
+    let min_dist = Infinity;
+    const last_opponent_move = last_move[opponentMark];
+    if (!last_opponent_move) return bestMoves[0];
+
+    for (const move of bestMoves) {
+        const [r, c] = move;
+        const dist = Math.pow(last_opponent_move[0] - r, 2) + Math.pow(last_opponent_move[1] - c, 2);
+        if (dist < min_dist) {
+            min_dist = dist;
+            bestMoveShortest = move;
+        }
+    }
+    return bestMoveShortest;
+}
+
+
+function cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size) {
+    const boardValues = generateBoardValues(size);
+    const validMoves = [];
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            if (board[r][c] === null && isValidMove(cpuMark, r, c)) {
+                validMoves.push([r, c]);
+            }
+        }
+    }
+    if (validMoves.length === 0) return null;
+    if (validMoves.length === 1) return validMoves[0];
+
+    let bestMove = null;
+    let maxScore = -Infinity;
+    for (const move of validMoves) {
+        const [r, c] = move;
+        board[r][c] = cpuMark;
+        const originalLastMoveForCpu = last_move[cpuMark];
+        last_move[cpuMark] = move;
+        const positionalValue = boardValues[r][c];
+        const opponentMoveCount = count_valid_moves(opponentMark);
+        const myNextMoveCount = count_valid_moves(cpuMark);
+        const score = (positionalValue * 3) - (opponentMoveCount * 7) + (myNextMoveCount * 5);
+        if (score > maxScore) {
+            maxScore = score;
+            bestMove = move;
+        }
+        board[r][c] = null;
+        last_move[cpuMark] = originalLastMoveForCpu;
+    }
+    return bestMove || validMoves[Math.floor(Math.random() * validMoves.length)];
+}
+
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 function cpu_move() {
     const cpuMark = "X";
-    const opponentMark = "O"; // CPU戦は2人用なので相手は'O'で固定
+    const opponentMark = "O";
+    let bestMove; // 変更点: 関数スコープで変数を宣言
 
-        // 新しい思考ルーチンで最善手を探す
-    const bestMove = cpu_logic_lv2(
-        board,
-        cpuMark,
-        opponentMark,
-        last_move,
-        size,
-        isValidMove,
-        count_valid_moves
-    );
+    if (cpu_move_count === 0) {
+        const initial_place = randomInt(0, (size * 4) - 5);
+        if (initial_place < size) {
+            bestMove = [0, initial_place];
+        } else if (initial_place < (size * 2) - 1) {
+            bestMove = [initial_place - size + 1, size - 1];
+        } else if (initial_place < (size * 3) - 2) {
+            bestMove = [size - 1, size - (initial_place - (size*2) + 3)];
+        } else {
+            bestMove = [size - (initial_place - (size*3) + 4), 0];
+        }
+    } else {
+        if (cpu_level === 1) {
+            bestMove = cpu_logic_lv1(board, cpuMark, opponentMark, last_move, size);
+        } else if (cpu_level === 2) {
+            bestMove = cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size);
+        }
+
+    }
 
     if (bestMove) {
         const [row, col] = bestMove;
         board[row][col] = cpuMark;
         last_move[cpuMark] = [row, col];
-            
-        // cpu_move_count はもう不要なので、関連する行は削除してもOK
-        // cpu_move_count++; 
-        
         switch_player();
         updateBoard();
         settle();
     } else {
-        // CPUが打つ手がない場合（基本的には発生しないはず）
         console.log("CPU has no valid moves.");
-        // 必要であれば、ここでパスの処理や敗北処理を呼び出す
         settle(); 
     }
+    cpu_move_count++;
 }
 
 function switch_player() {

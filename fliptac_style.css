@@ -26,7 +26,7 @@ body {
 #menu-screen h1 {
     margin: 0;
     font-family: "Showcard Gothic", sans-serif;
-    font-size: 15vw;
+    font-size: 10vw;
     font-weight: lighter;
     color: #f692ff;
     transition: 0.1s;
@@ -105,6 +105,32 @@ body {
     border-color: #ae04b1;
 }
 
+#level-selection-buttons {
+    display: flex;
+    gap: 5px;
+}
+
+.level-btn {
+    padding: 5px 10px;
+    border: 2px solid #777;
+    background-color: #555;
+    color: #eee;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 0.9em;
+    transition: background-color 0.2s;
+}
+
+.level-btn.active {
+    background-color: #b753c0;
+    color: #fff;
+    border-color: #ae04b1;
+}
+
+#cpu-level-container.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
 
 
 /* ゲーム画面 */
