@@ -4,11 +4,13 @@ import random
 class FlipTacEnv:
     """
     FlipTacのゲーム環境クラス
-    強化学習の標準的なインターフェース（reset, step）を提供します。
+    ポテンシャル法に基づく報酬シェーピングを導入したバージョン。
     """
-    def __init__(self, size=7):
+    def __init__(self, size=7, discount_factor=0.99, shaping_factor=0.10):
         self.size = size
         self.marks = {1: 'X', -1: 'O'} # 1: AI, -1: Opponent
+        self.gamma = discount_factor     # 割引率γ
+        self.shaping_factor = shaping_factor # 報酬シェーピングの影響度を調整する係数
         self.reset()
 
     def reset(self):
@@ -28,7 +30,7 @@ class FlipTacEnv:
         state = np.zeros((3, self.size, self.size), dtype=np.float32)
         state[0, self.board == self.current_player] = 1.0
         state[1, self.board == -self.current_player] = 1.0
-        state[2, :, :] = self.current_player # 現在のプレイヤー情報を全面に付与
+        state[2, :, :] = self.current_player
         return state
 
     def get_valid_moves(self, player):
@@ -44,35 +46,43 @@ class FlipTacEnv:
         """ 特定の手が有効かどうかを判定する """
         if self.board[row, col] != 0:
             return False
-
         last_pos = self.last_move[player]
         if last_pos is None:
             return row == 0 or row == self.size - 1 or col == 0 or col == self.size - 1
-
         lr, lc = last_pos
         if abs(lr - row) <= 1 and abs(lc - col) <= 1:
             return True
-
         if lr == row and abs(lc - col) == 2:
             jump_over_pos = self.board[row, (lc + col) // 2]
             return jump_over_pos != 0 and jump_over_pos != player
         elif lc == col and abs(lr - row) == 2:
             jump_over_pos = self.board[(lr + row) // 2, col]
             return jump_over_pos != 0 and jump_over_pos != player
-        
         return False
+
+    def _calculate_potential(self, player):
+        """
+        状態の価値（ポテンシャルΦ）を計算する関数。
+        ここでは「行動の自由度（Mobility）」をポテンシャルとして定義する。
+        Φ = (自分の有効手数) - (相手の有効手数)
+        """
+        my_moves = len(self.get_valid_moves(player))
+        opponent_moves = len(self.get_valid_moves(-player))
+        return my_moves - (1.5 * opponent_moves)
 
     def step(self, action):
         """
         行動を実行し、次の状態、報酬、ゲーム終了フラグを返す
-        action: (row, col) のタプル
         """
         row, col = action
         player = self.current_player
 
+        # --- ポテンシャル法のための計算(1/2): 行動前のポテンシャルを計算 ---
+        potential_before = self._calculate_potential(player)
+        # --------------------------------------------------------------------
+
         if not self.is_valid_move(player, row, col):
-            # 無効な手を選んだ場合、大きな負の報酬を与えてゲームを即終了
-            return self._get_state(), -10.0, True, {}
+            return self._get_state(), -20.0, True, {} # 無効手へのペナルティ
 
         self.board[row, col] = player
         self.last_move[player] = (row, col)
@@ -81,16 +91,36 @@ class FlipTacEnv:
         self.current_player *= -1
         opponent = self.current_player
 
-        # 勝利判定
+        # --- ポテンシャル法のための計算(2/2): 行動後のポテンシャルを計算 ---
+        # 報酬は行動したプレイヤー(player)視点で計算するため、引数に注意
+        potential_after = self._calculate_potential(player)
+        # --------------------------------------------------------------------
+
+        # --- 報酬の計算 ---
+        # 1. 最終結果に基づく基本報酬
         opponent_valid_moves = self.get_valid_moves(opponent)
+        my_valid_moves = self.get_valid_moves(player)
+        
         done = False
         reward = 0.0
 
         if not opponent_valid_moves:
             done = True
-            reward = 1.0 # 勝利！
+            reward = 1.0  # 勝利報酬
+        elif not my_valid_moves:
+            done = True
+            reward = -1.0 # 敗北報酬
         
-        # 1手ごとに小さな負の報酬を与え、早く勝つことを促す（任意）
-        reward -= 0.01
+        # 2. ポテンシャル法に基づく追加報酬（報酬シェーピング）
+        # F = γ * Φ(s') - Φ(s)
+        # gamma=0.99, shaping_factor=0.10
+        shaping_reward = (self.gamma * potential_after) - potential_before
+        
+        # 影響度を調整して最終的な報酬に加える
+        reward += self.shaping_factor * shaping_reward
+        
+        # 3. 時間経過による小さなペナルティ（任意）
+        reward -= 0.005
 
         return self._get_state(), reward, done, {}
+

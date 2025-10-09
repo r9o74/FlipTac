@@ -1,0 +1,28 @@
+def quick_sort(arr):
+    global count
+    count += 1
+    if len(arr) <= 1:
+        return arr
+    
+    pivot = arr[0]
+
+    lesser = [x for x in arr[1:] if x <= pivot]
+    greater = [x for x in arr[1:] if x > pivot]
+
+    return quick_sort(lesser) + [pivot] + quick_sort(greater)
+
+import random
+
+arr = [random.randint(0, 100) for _ in range(100)]
+
+if __name__ == "__main__":
+    count_list = []
+    for _ in range(10):
+        for _ in range(100):
+            count = 0
+            quick_sort(arr)
+            count_list.append(count)
+
+        print("Average number of comparisons:", sum(count_list) / len(count_list))
+
+

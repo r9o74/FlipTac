@@ -8,17 +8,25 @@ OUTPUT_ONNX_FILE = "fliptac_model.onnx"
 
 # --- 実行 ---
 if __name__ == '__main__':
-    # 1. モデルのインスタンスを作成し、学習済み权重を読み込む
+    # 1. モデルのインスタンスを作成
     device = torch.device("cpu")
     model = DQN(BOARD_SIZE, BOARD_SIZE).to(device)
-    model.load_state_dict(torch.load(PATH_TO_PTH_FILE, map_location=device))
+
+    # 2. 学習済みチェックポイントを読み込む
+    checkpoint = torch.load(PATH_TO_PTH_FILE, map_location=device)
+
+    # ▼▼▼ ここからが修正箇所 ▼▼▼
+    # 新しい形式のチェックポイントから、モデルの重みデータを取り出す
+    # 'policy_net_state_dict' というキーを指定する
+    model.load_state_dict(checkpoint['policy_net_state_dict'])
+    # ▲▲▲ 修正ここまで ▲▲▲
+    
     model.eval() # 推論モードに設定
 
-    # 2. ONNXエクスポートのためのダミー入力データを作成
-    # モデルの入力形式 (batch_size, channels, height, width) に合わせる
+    # 3. ONNXエクスポートのためのダミー入力データを作成
     dummy_input = torch.randn(1, 3, BOARD_SIZE, BOARD_SIZE, device=device)
 
-    # 3. ONNX形式にエクスポート
+    # 4. ONNX形式にエクスポート
     torch.onnx.export(model,
                       dummy_input,
                       OUTPUT_ONNX_FILE,
@@ -31,3 +39,4 @@ if __name__ == '__main__':
                                     'output': {0: 'batch_size'}})
 
     print(f"モデルが '{OUTPUT_ONNX_FILE}' として正常にエクスポートされました。")
+
