@@ -106,11 +106,11 @@ class FlipTacEnv:
 
         if not opponent_valid_moves:
             done = True
-            reward = 1.0  # 勝利報酬
+            reward = 5.0  # 勝利報酬
         elif not my_valid_moves:
             done = True
-            reward = -1.0 # 敗北報酬
-        
+            reward = -2.0 # 敗北報酬
+
         # 2. ポテンシャル法に基づく追加報酬（報酬シェーピング）
         # F = γ * Φ(s') - Φ(s)
         # gamma=0.99, shaping_factor=0.10
@@ -119,8 +119,26 @@ class FlipTacEnv:
         # 影響度を調整して最終的な報酬に加える
         reward += self.shaping_factor * shaping_reward
         
-        # 3. 時間経過による小さなペナルティ（任意）
-        reward -= 0.005
+        # 3. 時間経過による小さなペナルティ
+        reward -= 0.01
+
+        # 4. 角のペナルティ
+        corners = [(0, 0), (0, self.size - 1), (self.size - 1, 0), (self.size - 1, self.size - 1)]
+        if action in corners:
+            reward -= 0.20
+
+        # 5. 戦術的ボーナス: 相手の最後の手に近い位置に打つと小さなボーナス
+        opponent_last_move = self.last_move[opponent]
+        if opponent_last_move:
+            opp_r, opp_c = opponent_last_move
+            # 距離を計算
+            dist = max(abs(row - opp_r), abs(col - opp_c))
+            if dist >= 5:
+                reward -= 0.10
+            elif dist <= 3:
+                reward += 0.05
+
+
 
         return self._get_state(), reward, done, {}
 
