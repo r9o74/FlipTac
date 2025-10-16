@@ -18,15 +18,19 @@ from model import DQN
 # ===============================================================
 # 設定
 # ===============================================================
-BATCH_SIZE = 128
+BATCH_SIZE = 256 # バッチサイズを少し増やす
 GAMMA = 0.99
-EPS_START = 0.9
-EPS_END = 0.05
-EPS_DECAY = 20000
+# ▼▼▼ ε-greedyのパラメータを調整 ▼▼▼
+EPS_START = 1.0  # 最初は完全にランダム
+EPS_END = 0.01   # 最終的にはほぼ活用
+EPS_DECAY = 100000 # より多くのエピソードをかけてゆっくり探索率を下げる
+# ▲▲▲ ここまで ▲▲▲
 TAU = 0.005
 LR = 1e-4
 BOARD_SIZE = 7
-NUM_EPISODES = 30000 # 学習回数
+NUM_EPISODES = 200000 # 学習エピソード数を大幅に増やす
+OPPONENT_POOL_SIZE = 10 # 対戦相手を保存するプールのサイズ
+SAVE_INTERVAL = 1000 # モデルを保存する間隔
 
 # ===============================================================
 # Replay Memory
@@ -99,6 +103,38 @@ if checkpoints:
 target_net.load_state_dict(policy_net.state_dict())
 target_net.eval()
 
+
+
+# ▼▼▼ フェーズ2: 対戦相手プールの初期化 ▼▼▼
+opponent_pool = []
+opponent_dir = "opponent_pool"
+if os.path.exists(opponent_dir):
+    for f in os.listdir(opponent_dir):
+        if f.endswith(".pth"):
+            try:
+                opponent_net = DQN(BOARD_SIZE, BOARD_SIZE).to(device)
+                # ファイルを辞書形式として読み込みを試みる
+                checkpoint = torch.load(os.path.join(opponent_dir, f))
+                
+                # 辞書形式か、重みデータそのものかを判別
+                if isinstance(checkpoint, dict):
+                    # 新しい辞書形式の場合
+                    opponent_net.load_state_dict(checkpoint['policy_net_state_dict'])
+                else:
+                    # 古い形式の場合
+                    opponent_net.load_state_dict(checkpoint)
+                
+                opponent_pool.append(opponent_net)
+            except Exception as e:
+                print(f"Warning: Could not load opponent model {f}. Error: {e}")
+
+print(f"Loaded {len(opponent_pool)} opponents into the pool.")
+
+# ▲▲▲ ここまで ▲▲▲
+
+
+
+
 # ===============================================================
 # 関数定義 (select_action, optimize_model)
 # ===============================================================
@@ -143,35 +179,111 @@ def optimize_model():
     torch.nn.utils.clip_grad_value_(policy_net.parameters(), 100)
     optimizer.step()
 
+
 # ===============================================================
-# 学習ループ
+# 学習ループ
 # ===============================================================
 if __name__ == '__main__':
+    # tqdmを使って、学習の進捗をプログレスバーで表示します
     for i_episode in tqdm(range(start_episode, NUM_EPISODES), desc="Training Progress", initial=start_episode, total=NUM_EPISODES):
+        
+        # ▼▼▼ フェーズ2: 対戦相手をプールからランダムに選択 ▼▼▼
+        # プールが空か、25%の確率で最新の自分自身と対戦します
+        if not opponent_pool or random.random() < 0.25:
+            opponent_net = target_net # 最新の自分（target_netはpolicy_netの安定版）
+        else:
+            opponent_net = random.choice(opponent_pool)
+        opponent_net.eval() # 相手モデルを推論モードに設定
+        # ▲▲▲ ここまで ▲▲▲
+        
+        # ゲーム環境をリセットして、最初の盤面状態を取得
         state = env.reset()
         state = torch.tensor(state, dtype=torch.float32, device=device).unsqueeze(0)
-        for t in count():
-            action = select_action(state)
-            if action is None: break
-            observation, reward, done, _ = env.step(action)
-            reward = torch.tensor([reward], device=device)
-            next_state = None if done else torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
-            memory.push(state, action, next_state, reward)
-            state = next_state
-            optimize_model()
-            target_net_state_dict = target_net.state_dict()
-            policy_net_state_dict = policy_net.state_dict()
-            for key in policy_net_state_dict:
-                target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
-            target_net.load_state_dict(target_net_state_dict)
-            if done: break
         
-        if (i_episode + 1) % 100 == 0:
-            torch.save({
-                'policy_net_state_dict': policy_net.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'steps_done': steps_done,
-            }, f"fliptac_dqn_episode_{i_episode+1}.pth")
+        # 1エピソード（1ゲーム）が終わるまでループ
+        for t in count():
+            # 現在のプレイヤーがAI(1)か相手(-1)かで使うモデルを切り替える
+            if env.current_player == 1:
+                # 自分のターン：学習中のpolicy_netを使って行動を選択
+                action = select_action(state)
+            else: # 相手のターン
+                with torch.no_grad(): # 勾配計算は不要
+                    # 相手もDQNモデルとして手を選択する
+                    q_values = opponent_net(state)
+                    valid_moves = env.get_valid_moves(env.current_player)
+                    if not valid_moves:
+                        action = None
+                        break
+                    
+                    # 有効な手以外は選択しないようにマスクをかける
+                    mask = torch.full((BOARD_SIZE * BOARD_SIZE,), -float('inf'), device=device)
+                    for r, c in valid_moves:
+                        mask[r * BOARD_SIZE + c] = 0.0
+                    action_idx = (q_values.view(-1) + mask).argmax().item()
+                    action = (action_idx // BOARD_SIZE, action_idx % BOARD_SIZE)
+
+            # どちらかのプレイヤーが打つ手がなくなったらエピソード終了
+            if action is None:
+                break
+            
+            # AIの行動(player=1)のターンかどうかを記録
+            is_ai_turn = env.current_player == 1
+            
+            # 選択した行動を環境に渡し、次の状態、報酬、終了フラグを受け取る
+            observation, reward, done, _ = env.step(action)
+            
+            # AIのターンに得られた経験だけをReplay Memoryに保存
+            if is_ai_turn:
+                reward = torch.tensor([reward], device=device)
+                next_state = None if done else torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
+                memory.push(state, action, next_state, reward)
+
+            # 次の状態に更新
+            state = None if done else torch.tensor(observation, dtype=torch.float32, device=device).unsqueeze(0)
+            
+            # AIのターンだった場合のみ、モデルの最適化（学習）を実行
+            if is_ai_turn:
+                optimize_model()
+
+            # ゲームが終了したらエピソードのループを抜ける
+            if done:
+                break
+        
+        # ターゲットネットワークの重みをゆっくりと更新する
+        target_net_state_dict = target_net.state_dict()
+        policy_net_state_dict = policy_net.state_dict()
+        for key in policy_net_state_dict:
+            target_net_state_dict[key] = policy_net_state_dict[key]*TAU + target_net_state_dict[key]*(1-TAU)
+        target_net.load_state_dict(target_net_state_dict)
+
+        # ▼▼▼ チェックポイント保存と、対戦相手プールの更新 ▼▼▼
+        if (i_episode + 1) % SAVE_INTERVAL == 0:
+            # メインのチェックポイントを保存
+            save_path = f"fliptac_dqn_episode_{i_episode+1}.pth"
+            torch.save({'policy_net_state_dict': policy_net.state_dict(), 'optimizer_state_dict': optimizer.state_dict(), 'steps_done': steps_done}, save_path)
+            
+            # 対戦相手プール用のフォルダがなければ作成
+            if not os.path.exists(opponent_dir):
+                os.makedirs(opponent_dir)
+            pool_save_path = os.path.join(opponent_dir, f"opponent_{i_episode+1}.pth")
+            
+            # 対戦相手も辞書形式で保存する
+            torch.save({'policy_net_state_dict': policy_net.state_dict()}, pool_save_path)
+            
+            # プールが満杯なら一番古いものを削除
+            opponent_files = os.listdir(opponent_dir)
+            if len(opponent_files) > OPPONENT_POOL_SIZE:
+                oldest_file = min(opponent_files, key=lambda f: int(re.search(r'_(\d+)\.pth', f).group(1)))
+                os.remove(os.path.join(opponent_dir, oldest_file))
+            
+            # メモリ内のopponent_poolも更新
+            new_opponent = DQN(BOARD_SIZE, BOARD_SIZE).to(device)
+            new_opponent.load_state_dict(policy_net.state_dict())
+            if len(opponent_pool) >= OPPONENT_POOL_SIZE:
+                opponent_pool.pop(0)
+            opponent_pool.append(new_opponent)
+        # ▲▲▲ ここまで ▲▲▲
+
 
     print('Complete')
     torch.save({
@@ -179,4 +291,3 @@ if __name__ == '__main__':
         'optimizer_state_dict': optimizer.state_dict(),
         'steps_done': steps_done,
     }, "fliptac_dqn_final.pth")
-
