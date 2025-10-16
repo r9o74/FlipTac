@@ -1,28 +1,66 @@
-def quick_sort(arr):
-    global count
-    count += 1
-    if len(arr) <= 1:
-        return arr
+def heapify(arr, n, i):
+    """
+    あるノードiを根とする部分木を最大ヒープにする関数
+
+    arr: 対象のリスト
+    n: ヒープのサイズ
+    i: 部分木の根のインデックス
+    """
+    largest = i      # 親ノードのインデックスを暫定的な最大値とする
+    left = 2 * i + 1   # 左の子ノードのインデックス
+    right = 2 * i + 2  # 右の子ノードのインデックス
+
+    # --- 親、左の子、右の子の中で最大値を見つける ---
     
-    pivot = arr[0]
+    # 左の子が存在し、かつ親より大きい場合
+    if left < n and arr[i] < arr[left]:
+        largest = left
 
-    lesser = [x for x in arr[1:] if x <= pivot]
-    greater = [x for x in arr[1:] if x > pivot]
+    # 右の子が存在し、かつ現在最大（親または左の子）より大きい場合
+    if right < n and arr[largest] < arr[right]:
+        largest = right
 
-    return quick_sort(lesser) + [pivot] + quick_sort(greater)
+    # --- 最大値が親でなかった場合の処理 ---
+    
+    # largestが更新されていれば、iは最大値ではない
+    if largest != i:
+        # 親と最大値のノードを交換する
+        arr[i], arr[largest] = arr[largest], arr[i]
 
-import random
+        # 交換によって影響を受けたサブツリーに対して、再帰的にheapifyを呼び出す
+        heapify(arr, n, largest)
 
-arr = [random.randint(0, 100) for _ in range(100)]
+def heap_sort(arr):
+    """
+    ヒープソートを実行するメイン関数
+    """
+    n = len(arr)
 
-if __name__ == "__main__":
-    count_list = []
-    for _ in range(10):
-        for _ in range(100):
-            count = 0
-            quick_sort(arr)
-            count_list.append(count)
+    # 1. 最大ヒープを構築する
+    # 配列の中間から先頭に向かってheapifyを適用していく
+    # n // 2 - 1 は、子を持つ最後の親ノードのインデックス
+    for i in range(n // 2 - 1, -1, -1):
+        heapify(arr, n, i)
 
-        print("Average number of comparisons:", sum(count_list) / len(count_list))
+    # 2. ヒープから要素を一つずつ取り出してソートを実行する
+    # iは配列の末尾から先頭に向かって移動する
+    for i in range(n - 1, 0, -1):
+        # 現在のヒープの根（最大値）を、ヒープの末尾と交換
+        arr[i], arr[0] = arr[0], arr[i]
+        
+        # 交換後の縮小したヒープ（サイズi）に対して、根（0）からheapifyを適用し
+        # 再び最大ヒープを構築する
+        heapify(arr, i, 0)
+    
+    return arr
 
-
+# --- 実行例 ---
+if __name__ == '__main__':
+    my_list = [4, 10, 3, 5, 1, 9, 7]
+    
+    print(f"ソート前のリスト: {my_list}")
+    
+    # ヒープソートを実行
+    sorted_list = heap_sort(my_list)
+    
+    print(f"ソート後のリスト: {sorted_list}")
