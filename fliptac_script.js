@@ -33,10 +33,10 @@ let size;
 
 // ゲーム状態
 let board = [];
-const marks = ["X", "O", "Δ", "#"];
+const marks = ["X", "O", "Δ", "#", "&"];
 let invalid_marks = [];
 let current_player_idx = 0;
-let last_move = { "X": null, "O": null, "Δ": null, "#": null };
+let last_move = { "X": null, "O": null, "Δ": null, "#": null, "&": null };
 let cpu_move_count = 0;
 let cpu_level = 1;
 let onnxSession;
@@ -144,12 +144,13 @@ function initializeGame() {
     
     // ゲーム状態のリセット
     invalid_marks = [];
-    last_move = { "X": null, "O": null, "Δ": null, "#": null };
+    last_move = { "X": null, "O": null, "Δ": null, "#": null, "&": null };
     current_player_idx = 0;
     cpu_move_count = 0;
     winnerDisplay.style.display = 'none';
     
     // 使用しないor敗退済みのマーク
+    if (n <= 4) invalid_marks.push("&");
     if (n <= 3) invalid_marks.push("#");
     if (n <= 2) invalid_marks.push("Δ");
     
@@ -211,6 +212,17 @@ function hideRules() {
 // 変数名分かりにくいから次回以降気をつける
 
 function updateBoard() {
+    // マークを安全なCSSクラス名に変換するためのヘルパー関数
+    const getClassNameForMark = (mark) => {
+        if (!mark) return '';
+        switch (mark) {
+            case '#': return 'hash';
+            case 'Δ': return 'delta';
+            case '&': return 'ampersand'; // '&'を'ampersand'に変換
+            default: return mark; // 'X', 'O' はそのまま
+        }
+    };
+
     const currentPlayer = marks[current_player_idx];
     for (let r = 0; r < size; r++) {
         for (let c = 0; c < size; c++) {
@@ -218,21 +230,24 @@ function updateBoard() {
             const piece = board[r][c];
             cell.className = 'cell';
             cell.textContent = piece || '';
+
             if (piece) {
-                let className = piece === '#' ? 'hash' : piece;
+                const className = getClassNameForMark(piece);
                 cell.classList.add(className);
             } else if (isValidMove(currentPlayer, r, c)) {
                 if (n === 1 && currentPlayer === 'X') continue;
-                cell.classList.add(`valid-move-${currentPlayer === '#' ? 'hash' : currentPlayer}`);
+                const currentPlayerClass = getClassNameForMark(currentPlayer);
+                cell.classList.add(`valid-move-${currentPlayerClass}`);
             }
         }
     }
+
     for (const player in last_move) {
         if (last_move[player]) {
             const [lr, lc] = last_move[player];
             const cell = boardElement.children[lr * size + lc];
             if (cell.textContent === player) {
-                let className = player === '#' ? 'hash' : player;
+                const className = getClassNameForMark(player);
                 cell.classList.add(`last-${className}`);
             }
         }

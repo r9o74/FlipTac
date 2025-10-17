@@ -195,22 +195,26 @@ body {
 
 /* マークの色 */
 .cell.X { background-color: #89c3eb; color: #2e2e2e; }
-.cell.X:hover { background-color: #96d5ff; }
+.cell.X:hover { background-color: #a5dbff; }
 .cell.O { background-color: #f6ad49; color: #2e2e2e; }
 .cell.O:hover { background-color: #ffc16a; }
-.cell.Δ { background-color: #fef263; color: #2e2e2e; }
-.cell.Δ:hover { background-color: #fff79d; }
+.cell.delta { background-color: #fef263; color: #2e2e2e; }
+.cell.delta:hover { background-color: #fff79d; }
 .cell.hash { background-color: #ff7ff9; color: #2e2e2e; }
 .cell.hash:hover { background-color: #ffa5fa; }
+.cell.ampersand { background-color: #c4ff39; color: #2e2e2e; } 
+.cell.ampersand:hover { background-color: #d7ff7b; } 
 
 .cell.last-X { background-color: #4aa6f6; color: #e8e8e8 }
 .cell.last-X:hover { background-color: #3396ff; }
 .cell.last-O { background-color: #f37813; color: #e8e8e8 }
 .cell.last-O:hover { background-color: #e65a00; }
-.cell.last-Δ { background-color: #ffd900; color: #2e2e2e }
-.cell.last-Δ:hover { background-color: #e5ca00; }
+.cell.last-delta { background-color: #ffd900; color: #2e2e2e }
+.cell.last-delta:hover { background-color: #e5ca00; }
 .cell.last-hash { background-color: #cc1ddf; color: #e8e8e8 }
 .cell.last-hash:hover { background-color: #b004c8; }
+.cell.last-ampersand { background-color: #73a402; color: #e8e8e8;}
+.cell.last-ampersand:hover { background-color: #577c00;}
 
 .cell.valid-move-X {
     background-color: #60717c;
@@ -226,11 +230,11 @@ body {
 .cell.valid-move-O:hover {
     background-color: #f8c67f;
 }
-.cell.valid-move-Δ {
+.cell.valid-move-delta {
     background-color: #999356;
     border: 2px solid #a0a0a0;
 }
-.cell.valid-move-Δ:hover {
+.cell.valid-move-delta:hover {
     background-color: #fff7a0;
 }
 .cell.valid-move-hash {
@@ -239,6 +243,13 @@ body {
 }
 .cell.valid-move-hash:hover {
     background-color: #fbb1f7;
+}
+.cell.valid-move-ampersand {
+    background-color: #728649;
+    border: 2px solid #a0a0a0;
+}
+.cell.valid-move-ampersand:hover {
+    background-color: #e0ff9e;
 }
 .cell:hover {
     background-color: #6c6c6c;
