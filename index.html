@@ -10,41 +10,61 @@
 <body>
     <main>
         <div id="menu-screen">
-            <h1>Flip<span class="small_x"> x </span>Tac</h1>
+            <!-- ▼▼▼ メニュー画面のBGMボタンを追加 ▼▼▼ -->
+            <div class="top-controls-menu">
+                <button id="bgm-toggle-menu" class="icon-btn">
+                    <!-- SVG for speaker icon -->
+                    <svg class="speaker-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path><path class="speaker-slash" d="M1 1 L23 23" stroke-width="2" stroke="currentColor" fill="none"></path></svg>
+                </button>
+            </div>
+            <!-- ▲▲▲ ここまで ▲▲▲ -->
+
+            <h1>Flip<span class="small_x"></span>Tac</h1>
             <div class="settings">
                 <div class="setting-item">
                     <div id="players-selection-buttons">
-                        <button class="player-btn active" data-value="1">CPU戦</button>
-                        <button class="player-btn" data-value="2">2人</button>
-                        <button class="player-btn" data-value="3">3人</button>
-                        <button class="player-btn" data-value="4">4人</button>
+                        <button class="player-btn active" data-value="1">vsCPU</button>
+                        <button class="player-btn" data-value="2">2p</button>
+                        <button class="player-btn" data-value="3">3p</button>
+                        <button class="player-btn" data-value="4">4p</button>
                     </div>
                 </div>
                 <div class="setting-item" id="cpu-level-container">
-                    <label>CPU強さ</label>
+                    <label>CPU Lv.</label>
                     <div id="cpu-selection-buttons">
-                        <button class="level-btn active" data-level="1">Lv.1</button>
-                        <button class="level-btn" data-level="2">Lv.2</button>
-                        <button class="level-btn" data-level="3">Lv.3</button>
+                        <button class="level-btn active" data-level="1">1</button>
+                        <button class="level-btn" data-level="2">2</button>
+                        <button class="level-btn" data-level="3">3</button>
                     </div>
                 </div>
-
                 <div class="setting-item">
-                    <label for="size-input">盤面サイズ</label>
+                    <label for="size-input">size</label>
                     <input type="number" id="size-input" value="7" min="3" max="20">
                     <span>x</span>
                     <span id="size-display">7</span>
                 </div>
             </div>
-            <button id="start-button">START</button>
-            <button id="show-rules-menu-button" class="rule-button">ルール説明</button>
+            <button id="start-button">Start</button>
+            <button id="show-rules-menu-button" class="rule-button">Rules</button> 
         </div>
 
         <div id="game-screen" style="display: none;">
+            <div class="top-controls-game">
+                <button id="return-to-menu-btn" class="icon-btn" title="メニューに戻る">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg>
+                </button>
+                <button id="bgm-toggle-game" class="icon-btn" title="BGM オン/オフ">
+                    <svg class="speaker-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"></path><path class="speaker-slash" d="M1 1 L23 23" stroke-width="2" stroke="currentColor" fill="none"></path></svg>
+                </button>
+                <button id="show-rules-game-button" class="rule-button">Rules</button>
+            </div>
+
+            <!-- entire-board はゲーム盤だけを囲むようにする -->
             <div class="entire-board">
-                <button id="show-rules-game-button" class="rule-button">ルール説明</button>
                 <div id="game-board"></div>
-            </div>           
+            </div>
+            <!-- ▲▲▲ 修正ここまで ▲▲▲ -->
+          
             <div id="winner-display" style="display: none;">
                 <div class="winner-text"></div>
                 <div class="winner-options">
@@ -67,12 +87,11 @@
                 <button class="page-btn" data-page="2">1</button>
                 <button class="page-btn" data-page="3">2</button>
             </div>        
-            <button id="close-rules-button">CLOSE</button>
+            <button id="close-rules-button">Close</button>
         </div>
     </div>
-
+    
     <script src="fliptac_script.js" defer></script>
-
 </body>
 </html>
 

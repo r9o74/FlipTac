@@ -22,6 +22,9 @@ const ruleImages = document.querySelectorAll('.rule-image');
 const pageSwitchButtons = document.querySelectorAll('.page-btn');
 const levelSwitchButtons = document.querySelectorAll('.level-btn');
 const cpuLevelContainer = document.getElementById('cpu-level-container');
+const bgmToggleMenuButton = document.getElementById('bgm-toggle-menu');
+const bgmToggleGameButton = document.getElementById('bgm-toggle-game');
+const returnToMenuButton = document.getElementById('return-to-menu-btn');
 
 
 // ゲーム設定値
@@ -37,6 +40,7 @@ let last_move = { "X": null, "O": null, "Δ": null, "#": null };
 let cpu_move_count = 0;
 let cpu_level = 1;
 let onnxSession;
+let isBgmOn = true;
 
 // 効果音 & BGM
 const bgm = new Audio('BGM.mp3');
@@ -100,6 +104,9 @@ levelSwitchButtons.forEach(button => {
         button.classList.add('active');
     })
 })
+bgmToggleMenuButton.addEventListener('click', toggleBgm);
+bgmToggleGameButton.addEventListener('click', toggleBgm);
+returnToMenuButton.addEventListener('click', backToMenu);
 
 
 // 各種関数定義 
@@ -120,6 +127,8 @@ async function startGame() {
         }
     }
 
+    
+
     menuScreen.style.display = 'none';
     gameScreen.style.display = 'block';
 
@@ -128,7 +137,10 @@ async function startGame() {
 
 
 function initializeGame() {
-    document.body.addEventListener('click', () => bgm.play(), { once: true });
+
+    if (isBgmOn) {
+        bgm.play();
+    }
     
     // ゲーム状態のリセット
     invalid_marks = [];
@@ -211,7 +223,7 @@ function updateBoard() {
                 cell.classList.add(className);
             } else if (isValidMove(currentPlayer, r, c)) {
                 if (n === 1 && currentPlayer === 'X') continue;
-                cell.classList.add('valid-move');
+                cell.classList.add(`valid-move-${currentPlayer === '#' ? 'hash' : currentPlayer}`);
             }
         }
     }
@@ -542,8 +554,30 @@ function replayGame() {
 }
 
 function returnToMenu() {
+    backToMenu();
+}
+
+function toggleBgm() {
+    isBgmOn = !isBgmOn;
+    if (isBgmOn) {
+        bgm.play();
+        bgmToggleMenuButton.classList.remove('muted');
+        bgmToggleGameButton.classList.remove('muted');
+    } else {
+        bgm.pause();
+        bgmToggleMenuButton.classList.add('muted');
+        bgmToggleGameButton.classList.add('muted');
+    }
+}
+
+function backToMenu() {
     buttonSound.play();
-    winnerDisplay.style.display = 'none';
+    bgm.pause();
+    bgm.currentTime = 0; // 曲を最初に戻す
+
+    // ゲーム画面を非表示にし、メニュー画面を表示
     gameScreen.style.display = 'none';
     menuScreen.style.display = 'flex';
+    winnerDisplay.style.display = 'none'; // 念のため勝者表示も消す
 }
+

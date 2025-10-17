@@ -1,3 +1,12 @@
+@font-face {
+  font-family: 'Comfortaa';
+  src: url('fonts/Comfortaa/Comfortaa-VariableFont_wght.woff2') format('woff2'), /* 推奨：最新のWeb用フォーマット */
+       url('fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf') format('truetype'); /* ダウンロードしたTTFファイルなど */
+  font-weight: normal;
+  font-style: normal;
+}
+
+
 html {
     height: 100%;
 }
@@ -6,6 +15,7 @@ body {
     height: 100%;
     margin: 0;
     font-family: 'Bahnschrift', sans-serif;
+    font-weight: 500;
     background-color: #2e2930;
     color: #fdeffb;
     display: grid;
@@ -25,15 +35,15 @@ body {
 
 #menu-screen h1 {
     margin: 0;
-    font-family: "Showcard Gothic", sans-serif;
-    font-size: 10vw;
-    font-weight: lighter;
+    font-family: "Comfortaa", sans-serif;
+    font-size: 8vw;
+    font-weight: 400;
     color: #f692ff;
     transition: 0.1s;
 }
 
 .small_x {
-    font-size: 0.6em;
+    font-size: 0.7em;
 }
 
 #menu-screen h1:hover {
@@ -65,12 +75,12 @@ body {
 }
 
 #start-button {
-    font-family: "Showcard Gothic", sans-serif;
-    font-weight: 300;
+    font-family: "Comfortaa", sans-serif;
+    font-weight: 600;
     font-size: 1.2em;
     padding: 10px 20px;
     cursor: pointer;
-    background-color: #e56fff;
+    background-color: #b753c0;
     color: #fff;
     border: none;
     border-radius: 5px;
@@ -79,7 +89,7 @@ body {
 }
 
 #start-button:hover {
-    background-color: #d931ff;
+    background-color: #ae04b1;
     transform: scale(1.05);
 }
 
@@ -158,24 +168,24 @@ body {
     display: grid;
     border: 2px solid #555;
     aspect-ratio: 1 / 1; 
-    margin-top: 50px;
+    margin-top: 10px;
+    background-color: #3a3440;
 
     /* JSの変数--board-sizeを使って縦横の分割数を決定 */
-    grid-template-columns: repeat(var(--board-size, 5), 1fr);
-    grid-template-rows: repeat(var(--board-size, 5), 1fr);
+    grid-template-columns: repeat(var(--board-size), 1fr);
 }
 
 .entire-board {
-    position: relative;
+    width: 100%;
 }
 
 .cell {
-    border: 1px solid #444;
+    border: 1.5px solid #676767;
     display: flex;
     justify-content: center;
     align-items: center;
     cursor: pointer;
-    background-color: #2e2930;
+    background-color: #3a3a3a;
     font-weight: bold;
     -webkit-user-select: none;
     user-select: none;
@@ -185,17 +195,54 @@ body {
 
 /* マークの色 */
 .cell.X { background-color: #89c3eb; color: #2e2e2e; }
+.cell.X:hover { background-color: #96d5ff; }
 .cell.O { background-color: #f6ad49; color: #2e2e2e; }
+.cell.O:hover { background-color: #ffc16a; }
 .cell.Δ { background-color: #fef263; color: #2e2e2e; }
+.cell.Δ:hover { background-color: #fff79d; }
 .cell.hash { background-color: #ff7ff9; color: #2e2e2e; }
+.cell.hash:hover { background-color: #ffa5fa; }
 
 .cell.last-X { background-color: #4aa6f6; color: #e8e8e8 }
+.cell.last-X:hover { background-color: #3396ff; }
 .cell.last-O { background-color: #f37813; color: #e8e8e8 }
+.cell.last-O:hover { background-color: #e65a00; }
 .cell.last-Δ { background-color: #ffd900; color: #2e2e2e }
+.cell.last-Δ:hover { background-color: #e5ca00; }
 .cell.last-hash { background-color: #cc1ddf; color: #e8e8e8 }
+.cell.last-hash:hover { background-color: #b004c8; }
 
-.cell.valid-move {
-    background-color: #b8d200;
+.cell.valid-move-X {
+    background-color: #60717c;
+    border: 2px solid #a0a0a0;
+}
+.cell.valid-move-X:hover {
+    background-color: #dbf1ff;
+}
+.cell.valid-move-O {
+    background-color: #977d58;
+    border: 2px solid #a0a0a0;
+}
+.cell.valid-move-O:hover {
+    background-color: #f8c67f;
+}
+.cell.valid-move-Δ {
+    background-color: #999356;
+    border: 2px solid #a0a0a0;
+}
+.cell.valid-move-Δ:hover {
+    background-color: #fff7a0;
+}
+.cell.valid-move-hash {
+    background-color: #6a5468;
+    border: 2px solid #a0a0a0;
+}
+.cell.valid-move-hash:hover {
+    background-color: #fbb1f7;
+}
+.cell:hover {
+    background-color: #6c6c6c;
+    border: 1.5px solid #a0a0a0;
 }
 
 /* 勝利画面 */
@@ -213,7 +260,7 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-family: "Showcard Gothic", sans-serif;
+    font-family: "Comfortaa", sans-serif;
     font-size: 50px;
     border-radius: 10px;
 }
@@ -283,7 +330,7 @@ body {
 }
 
 .page-btn {
-    font-family: "Showcard Gothic", sans-serif;
+    font-family: "Comfortaa", sans-serif;
     font-weight: 300;
     width: 30px;
     height: 30px;
@@ -315,8 +362,8 @@ body {
 }
 
 #close-rules-button {
-    font-family: "Showcard Gothic", sans-serif;
-    font-weight: 300;
+    font-family: "Comfortaa", sans-serif;
+    font-weight: 600;
     padding: 10px 25px;
     font-size: 1.1em;
     cursor: pointer;
@@ -324,7 +371,6 @@ body {
 
 /* ルール説明 */
 .rule-button {
-    margin-top: 10px;
     padding: 5px 10px;
     background-color: #6c757d;
     color: white;
@@ -338,14 +384,63 @@ body {
     transform: scale(1.05);
 }
 
-#show-rules-game-button {
-    position: absolute;
-    top: -50px;
-    right: 0px;
-    margin-top: 0px;
-    z-index: 10;
-}
+
 
 .hidden {
     display: none !important;
+}
+
+
+
+
+.top-controls-menu {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+}
+
+.top-controls-game {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+
+
+.icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+}
+
+.icon-btn svg {
+    width: 100%;
+    height: 100%;
+    fill: #fdeffb;
+    transition: fill 0.1s;
+}
+
+.icon-btn:hover svg {
+    fill: #f692ff;
+}
+
+.speaker-icon .speaker-slash {
+    display: none; /* デフォルトでは斜線を隠す */
+}
+
+.icon-btn.muted .speaker-icon .speaker-slash {
+    display: block; /* mutedクラスがついたら斜線を表示 */
+}
+.icon-btn.muted .speaker-icon {
+    fill: #777; /* ミュート時の色 */
+}
+.icon-btn.muted .speaker-slash {
+    stroke: #777; /* ミュート時の斜線の色 */
+    stroke-width: 3;
 }
