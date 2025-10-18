@@ -26,6 +26,7 @@ const bgmToggleMenuButton = document.getElementById('bgm-toggle-menu');
 const bgmToggleGameButton = document.getElementById('bgm-toggle-game');
 const returnToMenuButton = document.getElementById('return-to-menu-btn');
 const geminiThinkingIndicator = document.getElementById('gemini-thinking-indicator');
+const loadingOverlay = document.getElementById('loading-overlay'); // ← この行を追加
 
 
 
@@ -461,7 +462,7 @@ async function cpu_logic_lv3(board, cpuMark, opponentMark, last_move, size) {
     const feeds = { 'input': tensor };
 
     // 2. モデルで推論を実行
-    const results = await onnxSession.run(feeds);
+    const results = await session.run(feeds);
     const qValues = results.output.data;
 
     // 3. 有効な手の中から、Q値が最大の手を見つける
