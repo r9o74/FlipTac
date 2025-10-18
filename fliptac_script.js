@@ -41,7 +41,10 @@ let current_player_idx = 0;
 let last_move = { "X": null, "O": null, "Δ": null, "#": null, "&": null };
 let cpu_move_count = 0;
 let cpu_level = 1;
-let onnxSession;
+let onnxSessions = {
+    5: null,
+    7: null
+};
 let isBgmOn = true;
 
 // 効果音 & BGM
@@ -148,13 +151,26 @@ async function startGame() {
     startSound.play()
     buttonSound.play()
 
-    if (n === 1 && cpu_level === 3 && !onnxSession) {
-        try {
-            onnxSession = await ort.InferenceSession.create('./fliptac_model.onnx');
-        } catch (error) {
-            console.error("ONNX Runtime error:", error);
-            alert("Failed to load AI model. Please try again.");
-            return;
+    if (n === 1 && cpu_level === 3) {
+        // sizeが5か7の時のみモデルをロード
+        if (size === 5 || size === 7) {
+            // まだそのサイズのモデルが読み込まれていなければロードする
+            if (!onnxSessions[size]) {
+                const modelPath = size === 5 ? './fliptac_model_5x5.onnx' : './fliptac_model.onnx';
+                try {
+                    loadingOverlay.classList.remove('hidden');
+                    console.log(`Loading AI model for ${size}x${size} board...`);
+                    onnxSessions[size] = await ort.InferenceSession.create(modelPath);
+                    console.log("AI model loaded successfully!");
+                } catch (e) {
+                    console.error(`Failed to load AI model: ${modelPath}`, e);
+                    alert(`AIモデル(${modelPath})の読み込みに失敗しました。`);
+                    loadingOverlay.classList.add('hidden');
+                    return; // モデルの読み込みに失敗したらゲームを開始しない
+                } finally {
+                    loadingOverlay.classList.add('hidden');
+                }
+            }
         }
     }
 
@@ -409,9 +425,14 @@ function cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size) {
 }
 
 async function cpu_logic_lv3(board, cpuMark, opponentMark, last_move, size) {
-    if (!onnxSession) {
-        console.error("ONNXセッションが初期化されていません。");
-        return null;
+
+    const session = onnxSessions[size];
+    if (!session) {
+        console.error(`ONNX session for size ${size}x${size} is not initialized.`);
+        // フォールバックとしてランダムな手を返す
+        const validMoves = [];
+        for (let r = 0; r < size; r++) { for (let c = 0; c < size; c++) { if (isValidMove(cpuMark, r, c)) validMoves.push([r, c]); } }
+        return validMoves.length > 0 ? validMoves[Math.floor(Math.random() * validMoves.length)] : null;
     }
 
     // 1. 現在の盤面をモデルの入力形式（テンソル）に変換する

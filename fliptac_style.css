@@ -40,6 +40,7 @@ body {
     font-weight: 400;
     color: #f692ff;
     transition: 0.1s;
+    margin-bottom: -25px;
 }
 
 .small_x {
@@ -48,6 +49,16 @@ body {
 
 #menu-screen h1:hover {
     transform: scale(1.02); 
+}
+
+#menu-screen p {
+    width: 100%;
+    margin: 0;
+    font-size: 2vw;
+    font-weight: 400;
+    color: #fdeffb;
+    text-align: center;       /* テキストを右に寄せる */
+    padding-left: 20vw;
 }
 
 .settings {
