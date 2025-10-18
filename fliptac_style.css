@@ -248,6 +248,7 @@ body {
 #game-screen {
     width: 80vmin;
     max-width: 500px;
+    flex-direction: column;
 }
 
 #game-board {
