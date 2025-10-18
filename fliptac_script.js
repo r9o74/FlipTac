@@ -154,7 +154,7 @@ async function startGame() {
         if (size === 5 || size === 7) {
             if (!onnxSessions[size]) {
                 // GitHub Pagesのルートからのパスを指定します
-                const modelPath = size === 5 ? '/FlipTac/fliptac_model_5x5.onnx' : '/FlipTac/fliptac_model.onnx';
+                const modelPath = size === 5 ? '/fliptac_model_5x5.onnx' : '/fliptac_model.onnx';
                 try {
                     console.log(`Loading AI model for ${size}x${size} board...`);
                     onnxSessions[size] = await ort.InferenceSession.create(modelPath);
