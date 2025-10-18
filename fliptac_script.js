@@ -26,8 +26,6 @@ const bgmToggleMenuButton = document.getElementById('bgm-toggle-menu');
 const bgmToggleGameButton = document.getElementById('bgm-toggle-game');
 const returnToMenuButton = document.getElementById('return-to-menu-btn');
 const geminiThinkingIndicator = document.getElementById('gemini-thinking-indicator');
-const loadingOverlay = document.getElementById('loading-overlay'); // ← この行を追加
-
 
 
 // ゲーム設定値
@@ -155,9 +153,9 @@ async function startGame() {
     if (n === 1 && cpu_level === 3) {
         if (size === 5 || size === 7) {
             if (!onnxSessions[size]) {
-                const modelPath = size === 5 ? './fliptac_model_5x5.onnx' : './fliptac_model.onnx';
+                // GitHub Pagesのルートからのパスを指定します
+                const modelPath = size === 5 ? '/FlipTac/fliptac_model_5x5.onnx' : '/FlipTac/fliptac_model.onnx';
                 try {
-                    loadingOverlay.classList.remove('hidden');
                     console.log(`Loading AI model for ${size}x${size} board...`);
                     onnxSessions[size] = await ort.InferenceSession.create(modelPath);
                     console.log("AI model loaded successfully!");
@@ -165,10 +163,8 @@ async function startGame() {
                     console.error(`Failed to load AI model: ${modelPath}`, e);
                     // ▼▼▼ 修正箇所: エラーの詳細をアラートに表示 ▼▼▼
                     alert(`AIモデル(${modelPath})の読み込みに失敗しました。\n\nエラー詳細:\n${e.message}`);
-                    loadingOverlay.classList.add('hidden');
                     return;
                 } finally {
-                    loadingOverlay.classList.add('hidden');
                 }
             }
         }
