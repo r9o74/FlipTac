@@ -61,7 +61,7 @@ const markSound = new Audio('mark.mp3')
 // イベントリスナー
 startButton.addEventListener('click', startGame);
 sizeSlider.addEventListener('input', () => {
-    sizeDisplay.textContent = `${sizeSlider.value} x ${sizeSlider.value}`;
+sizeDisplay.textContent = `${sizeSlider.value} x ${sizeSlider.value}`;
 });
 replayButton.addEventListener('click', replayGame);
 changeSettingsButton.addEventListener('click', returnToMenu);
@@ -148,13 +148,11 @@ function updateSliderOptions() {
 
 async function startGame() {
     size = parseInt(sizeSlider.value, 10);
-    startSound.play()
-    buttonSound.play()
+    startSound.play();
+    buttonSound.play();
 
     if (n === 1 && cpu_level === 3) {
-        // sizeが5か7の時のみモデルをロード
         if (size === 5 || size === 7) {
-            // まだそのサイズのモデルが読み込まれていなければロードする
             if (!onnxSessions[size]) {
                 const modelPath = size === 5 ? './fliptac_model_5x5.onnx' : './fliptac_model.onnx';
                 try {
@@ -164,9 +162,10 @@ async function startGame() {
                     console.log("AI model loaded successfully!");
                 } catch (e) {
                     console.error(`Failed to load AI model: ${modelPath}`, e);
-                    alert(`AIモデル(${modelPath})の読み込みに失敗しました。`);
+                    // ▼▼▼ 修正箇所: エラーの詳細をアラートに表示 ▼▼▼
+                    alert(`AIモデル(${modelPath})の読み込みに失敗しました。\n\nエラー詳細:\n${e.message}`);
                     loadingOverlay.classList.add('hidden');
-                    return; // モデルの読み込みに失敗したらゲームを開始しない
+                    return;
                 } finally {
                     loadingOverlay.classList.add('hidden');
                 }
@@ -174,10 +173,12 @@ async function startGame() {
         }
     }
 
-    
+    if (isBgmOn) {
+        bgm.play();
+    }
 
     menuScreen.style.display = 'none';
-    gameScreen.style.display = 'block';
+    gameScreen.style.display = 'flex';
 
     initializeGame();
 }
