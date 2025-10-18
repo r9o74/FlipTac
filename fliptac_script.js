@@ -25,6 +25,8 @@ const cpuLevelContainer = document.getElementById('cpu-level-container');
 const bgmToggleMenuButton = document.getElementById('bgm-toggle-menu');
 const bgmToggleGameButton = document.getElementById('bgm-toggle-game');
 const returnToMenuButton = document.getElementById('return-to-menu-btn');
+const geminiThinkingIndicator = document.getElementById('gemini-thinking-indicator');
+
 
 
 // ゲーム設定値
@@ -134,7 +136,6 @@ async function startGame() {
 
     initializeGame();
 }
-
 
 function initializeGame() {
 
@@ -297,6 +298,9 @@ function generateBoardValues(size) {
     return values;
 }
 
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
 function cpu_logic_lv1(board, cpuMark, opponentMark, last_move, size) {
     const validMoves = [];
@@ -340,7 +344,6 @@ function cpu_logic_lv1(board, cpuMark, opponentMark, last_move, size) {
     }
     return bestMoveShortest;
 }
-
 
 function cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size) {
     const boardValues = generateBoardValues(size);
@@ -429,15 +432,118 @@ async function cpu_logic_lv3(board, cpuMark, opponentMark, last_move, size) {
     return validMoves[0].move;
 }
 
-function randomInt(min, max) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+function formatBoardStateForGemini() {
+    const boardString = board.map(row => 
+        row.map(cell => cell === null ? '.' : cell).join(' ')
+    ).join('\n');
+    
+    const validMoves = [];
+    for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+            if (isValidMove('X', r, c)) { // Geminiは常に 'X'
+                validMoves.push([r, c]);
+            }
+        }
+    }
+
+    return `
+- 盤面サイズ: ${size}x${size}
+- あなたのマーク: X
+- 人間プレイヤーのマーク: O
+- 現在の盤面 ('.'は空きマス):
+${boardString}
+- あなたが現在打てる有効な手 (Valid Moves) のリスト:
+${JSON.stringify(validMoves)}
+`;
 }
+
+async function cpu_logic_lv4() {
+    geminiThinkingIndicator.classList.remove('hidden');
+
+    const boardState = formatBoardStateForGemini();
+    const prompt = `
+あなたは世界トップクラスのボードゲーム戦略家です。これから「FlipTac」というゲームのルールと現在の盤面状況を渡します。あなたのターンです。
+提供された情報のみを元に、勝利に最も繋がる最善の一手を考え、指定されたJSON形式で回答してください。
+
+
+
+###FlipTacのルール
+目的: 盤面上で相手が動けなくなるように追い込み、最後まで生き残ること。
+
+初手 (ゲーム開始時のみ): 盤面に自分のマークが全く存在しないプレイヤーの最初の1手は、必ず盤面の外周のいずれかの空きマスに置かなければならない。
+
+有効な移動 (2手目以降/進行中): 自分の直前の手（マーク）がある場合、そのプレイヤーは以下のいずれかの条件を満たす空きマスに移動できる。
+
+通常移動: 自分の直前の手から隣接する8マス（縦、横、斜め含む）の空きマス。
+
+ジャンプ移動: 自分の直前の手の上下左右に隣接する4マスのいずれかに相手のマークがある場合に限り、そのマークをちょうど1マス飛び越えた先の空きマス。
+
+敗北条件: 自分の有効な手が一つもなくなった場合、そのプレイヤーは脱落（負け）となる。
+
+### 現在の対局状況
+${boardState}
+
+### あなたのタスク
+上記の「あなたが現在打てる有効な手 (Valid Moves) のリスト」の中から、最も戦略的に優れていると判断した手を一つだけ選び、以下のJSON形式で回答してください。
+回答には、JSONオブジェクト以外の余計な説明やテキストを一切含めないでください。
+
+出力形式:
+{"move": [row, column]}
+`;
+
+    const apiKey = "";
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+    const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: "application/json" },
+    };
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!response.ok) throw new Error(`API Error: ${response.status}`);
+        
+        const result = await response.json();
+        const textResponse = result.candidates[0].content.parts[0].text;
+        const parsedJson = JSON.parse(textResponse);
+
+        if (parsedJson.move && Array.isArray(parsedJson.move) && parsedJson.move.length === 2) {
+             // 念のため、返ってきた手が本当に有効手か再検証する
+            const validMoves = JSON.parse(boardState.split('Valid Moves) のリスト:\n')[1]);
+            const isTrulyValid = validMoves.some(move => move[0] === parsedJson.move[0] && move[1] === parsedJson.move[1]);
+            if(isTrulyValid) {
+                return parsedJson.move;
+            } else {
+                console.error("Gemini returned a move that is not in the valid moves list. Fallback to random.");
+                return validMoves[Math.floor(Math.random() * validMoves.length)]; // フォールバック
+            }
+        }
+    } catch (error) {
+        console.error("Gemini API call failed:", error);
+        alert("Gemini AIの呼び出しに失敗しました。ランダムな手に切り替えます。");
+         const validMoves = JSON.parse(boardState.split('Valid Moves) のリスト:\n')[1]);
+         if(validMoves.length > 0) {
+            return validMoves[Math.floor(Math.random() * validMoves.length)]; // エラー時のフォールバック
+         }
+    } finally {
+        geminiThinkingIndicator.classList.add('hidden');
+    }
+    return null;   
+}
+
+
 
 async function cpu_move() {
     const cpuMark = "X";
     const opponentMark = "O";
     let bestMove; // 変更点: 関数スコープで変数を宣言
 
+    if (cpu_level === 4) {
+        bestMove = await cpu_logic_lv4();
+    } else {
         if (cpu_move_count === 0) {
             const initial_place = randomInt(0, (size * 4) - 5);
             if (initial_place < size) {
@@ -456,8 +562,11 @@ async function cpu_move() {
                 bestMove = cpu_logic_lv2(board, cpuMark, opponentMark, last_move, size);
             } else if (cpu_level === 3) {
                 bestMove = await cpu_logic_lv3(board, cpuMark, opponentMark, last_move, size);
+            } else if (cpu_level === 4) {
+                bestMove = await cpu_logic_lv4();
             }
         }
+    }
 
 
     if (bestMove) {

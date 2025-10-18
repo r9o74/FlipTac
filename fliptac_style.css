@@ -157,6 +157,45 @@ body {
     pointer-events: none;
 }
 
+.level-btn[data-level="4"].active {
+    background-color: #8A2BE2;
+    border-color: #4B0082;
+    animation: gemini-glow 1.5s infinite alternate;
+}
+
+@keyframes gemini-glow {
+    from { box-shadow: 0 0 5px #c690f7}
+    to { box-shadow: 0 0 20px #c690f7, 0 0 30px #d8b6ff}
+}
+
+#gemini-thinking-indicator {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 100;
+    color: white;
+    border-radius: 10px;
+}
+.spinner {
+    border: 6px solid #f3f3f3;
+    border-top: 6px solid #8A2BE2;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    animation: spin 1s linear infinite;
+    margin-bottom: 15px;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
 
 /* ゲーム画面 */
 #game-screen {
@@ -217,7 +256,7 @@ body {
 .cell.last-ampersand:hover { background-color: #577c00;}
 
 .cell.valid-move-X {
-    background-color: #60717c;
+    background-color: #556e7f;
     border: 2px solid #a0a0a0;
 }
 .cell.valid-move-X:hover {
@@ -238,7 +277,7 @@ body {
     background-color: #fff7a0;
 }
 .cell.valid-move-hash {
-    background-color: #6a5468;
+    background-color: #755672;
     border: 2px solid #a0a0a0;
 }
 .cell.valid-move-hash:hover {
