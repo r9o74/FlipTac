@@ -491,7 +491,7 @@ ${boardState}
 {"move": [row, column]}
 `;
 
-    const apiKey = "";
+    const apiKey = "AIzaSyAgxffZbrRzFrBqYYDb0lCnzdFZul6MN7E";
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
     const payload = {
         contents: [{ parts: [{ text: prompt }] }],
