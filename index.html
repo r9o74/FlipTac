@@ -36,6 +36,7 @@
                         <button class="level-btn active" data-level="1">1</button>
                         <button class="level-btn" data-level="2">2</button>
                         <button class="level-btn" data-level="3">3</button>
+                        <button class="level-btn" data-level="4">4</button>
                     </div>
                 </div>
                 <div class="setting-item">
@@ -60,11 +61,13 @@
                 <button id="show-rules-game-button" class="rule-button">Rules</button>
             </div>
 
-            <!-- entire-board はゲーム盤だけを囲むようにする -->
             <div class="entire-board">
+                <div id="gemini-thinking-indicator" class="hidden">
+                    <div class="spinner"></div>
+                    <p>Gemini is thinking...</p>
+                </div>
                 <div id="game-board"></div>
             </div>
-            <!-- ▲▲▲ 修正ここまで ▲▲▲ -->
           
             <div id="winner-display" style="display: none;">
                 <div class="winner-text"></div>
