@@ -7,7 +7,7 @@ const menuScreen = document.getElementById('menu-screen');
 const gameScreen = document.getElementById('game-screen');
 const startButton = document.getElementById('start-button');
 const playerButtons = document.querySelectorAll('.player-btn');
-const sizeInput = document.getElementById('size-input');
+const sizeSlider = document.getElementById('size-slider');
 const sizeDisplay = document.getElementById('size-display');
 const boardElement = document.getElementById('game-board');
 const winnerDisplay = document.getElementById('winner-display');
@@ -57,31 +57,11 @@ const markSound = new Audio('mark.mp3')
 
 // イベントリスナー
 startButton.addEventListener('click', startGame);
-sizeInput.addEventListener('input', (e) => {
-    sizeDisplay.textContent = e.target.value;
+sizeSlider.addEventListener('input', () => {
+    sizeDisplay.textContent = `${sizeSlider.value} x ${sizeSlider.value}`;
 });
 replayButton.addEventListener('click', replayGame);
 changeSettingsButton.addEventListener('click', returnToMenu);
-playerButtons.forEach(button => {
-    button.addEventListener('click', () => {
-        buttonSound.play()
-        // 1. すべてのボタンから 'active' クラスを削除
-        playerButtons.forEach(btn => btn.classList.remove('active'));
-
-        // 2. クリックされたボタンに 'active' クラスを追加
-        button.classList.add('active');
-
-        // 3. data-value属性から値を取得し、変数nを更新
-        n = parseInt(button.dataset.value, 10);
-
-        if (n===1) {
-            cpuLevelContainer.classList.remove('disabled');
-        } else {
-            cpuLevelContainer.classList.add('disabled');
-        }
-           });
-    buttonSound.play();
-});
 showRulesMenuButton.addEventListener('click', showRules);
 showRulesGameButton.addEventListener('click', showRules);
 closeRulesButton.addEventListener('click', hideRules);
@@ -96,6 +76,30 @@ pageSwitchButtons.forEach(button => {
         startSound.play()
     });
 });
+bgmToggleMenuButton.addEventListener('click', toggleBgm);
+bgmToggleGameButton.addEventListener('click', toggleBgm);
+returnToMenuButton.addEventListener('click', backToMenu);
+sizeSlider.addEventListener('input', () => {
+    sizeDisplay.textContent = `${sizeSlider.value} x ${sizeSlider.value}`;
+});
+replayButton.addEventListener('click', replayGame);
+changeSettingsButton.addEventListener('click', returnToMenu);
+playerButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        buttonSound.play();
+        playerButtons.forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        n = parseInt(button.dataset.value, 10);
+
+        if (n === 1) {
+            cpuLevelContainer.classList.remove('disabled');
+        } else {
+            cpuLevelContainer.classList.add('disabled');
+        }
+        updateSliderOptions(); // スライダーの選択肢を更新
+    });
+});
+
 levelSwitchButtons.forEach(button => {
     button.addEventListener('click', () => {
         if (cpuLevelContainer.classList.contains('disabled')) return;
@@ -104,18 +108,43 @@ levelSwitchButtons.forEach(button => {
         buttonSound.play();
         levelSwitchButtons.forEach(btn => btn.classList.remove('active'));
         button.classList.add('active');
-    })
-})
-bgmToggleMenuButton.addEventListener('click', toggleBgm);
-bgmToggleGameButton.addEventListener('click', toggleBgm);
-returnToMenuButton.addEventListener('click', backToMenu);
+        
+        updateSliderOptions(); // スライダーの選択肢を更新
+    });
+});
+document.addEventListener('DOMContentLoaded', () => {
+    updateSliderOptions();
+});
+
 
 
 // 各種関数定義 
 
+function updateSliderOptions() {
+    // プレイヤー人数(n)とCPUレベル(cpu_level)に基づいて分岐
+    if (n === 1 && cpu_level === 3) {
+        // LV3 CPU戦の場合、5と7のみ選択可能にする
+        sizeSlider.min = '5';
+        sizeSlider.max = '7';
+        sizeSlider.step = '2'; // stepを2にすることで、5の次は7になる
+        
+        // 現在の値が5か7でなければ、5に設定
+        if (sizeSlider.value !== '5' && sizeSlider.value !== '7') {
+            sizeSlider.value = '5';
+        }
+    } else {
+        // それ以外の場合、3から20まで
+        sizeSlider.min = '3';
+        sizeSlider.max = '10';
+        sizeSlider.step = '1';
+    }
+    // 表示を更新
+    sizeDisplay.textContent = `${sizeSlider.value} x ${sizeSlider.value}`;
+}
+
 
 async function startGame() {
-    size = parseInt(sizeInput.value, 10);
+    size = parseInt(sizeSlider.value, 10);
     startSound.play()
     buttonSound.play()
 

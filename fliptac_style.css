@@ -60,7 +60,43 @@ body {
     display: flex;
     align-items: center;
     gap: 10px;
-    font-size: 1.2em;
+    font-size: 100%;
+}
+
+#size-slider {
+    flex-grow: 1;
+    -webkit-appearance: none;
+    appearance: none;
+    height: 8px;
+    background: #555;
+    border-radius: 5px;
+    outline: none;
+    cursor: pointer;
+}
+
+#size-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: var(--accent-color, #f692ff);
+    border-radius: 50%;
+    border: 3px solid #3a3440;
+}
+
+#size-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--accent-color, #f692ff);
+    border-radius: 50%;
+    border: 3px solid #3a3440;
+}
+
+#size-display {
+    width: 60px; /* 表示の幅を固定してガタつきを防ぐ */
+    text-align: center;
+    font-weight: bold;
+    color: #fff;
 }
 
 #players-input, #size-input {
