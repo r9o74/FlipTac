@@ -1,66 +1,46 @@
-def heapify(arr, n, i):
-    """
-    あるノードiを根とする部分木を最大ヒープにする関数
+def merge_sort(arr):
+    if len(arr) <= 1:
+        return arr
 
-    arr: 対象のリスト
-    n: ヒープのサイズ
-    i: 部分木の根のインデックス
-    """
-    largest = i      # 親ノードのインデックスを暫定的な最大値とする
-    left = 2 * i + 1   # 左の子ノードのインデックス
-    right = 2 * i + 2  # 右の子ノードのインデックス
+    # 1.分割
+    mid = len(arr) // 2
+    left_half = arr[:mid]
+    right_half = arr[mid:]
 
-    # --- 親、左の子、右の子の中で最大値を見つける ---
-    
-    # 左の子が存在し、かつ親より大きい場合
-    if left < n and arr[i] < arr[left]:
-        largest = left
 
-    # 右の子が存在し、かつ現在最大（親または左の子）より大きい場合
-    if right < n and arr[largest] < arr[right]:
-        largest = right
+    # 2.統治（左右の部分リストを再帰的にソート）
+    left_sorted = merge_sort(left_half)
+    right_sorted = merge_sort(right_half)
 
-    # --- 最大値が親でなかった場合の処理 ---
-    
-    # largestが更新されていれば、iは最大値ではない
-    if largest != i:
-        # 親と最大値のノードを交換する
-        arr[i], arr[largest] = arr[largest], arr[i]
+    # 3.結合
+    return merge(left_sorted, right_sorted)
 
-        # 交換によって影響を受けたサブツリーに対して、再帰的にheapifyを呼び出す
-        heapify(arr, n, largest)
 
-def heap_sort(arr):
-    """
-    ヒープソートを実行するメイン関数
-    """
-    n = len(arr)
+def merge(left, right):
+    merged_list = []
+    i, j = 0, 0
 
-    # 1. 最大ヒープを構築する
-    # 配列の中間から先頭に向かってheapifyを適用していく
-    # n // 2 - 1 は、子を持つ最後の親ノードのインデックス
-    for i in range(n // 2 - 1, -1, -1):
-        heapify(arr, n, i)
 
-    # 2. ヒープから要素を一つずつ取り出してソートを実行する
-    # iは配列の末尾から先頭に向かって移動する
-    for i in range(n - 1, 0, -1):
-        # 現在のヒープの根（最大値）を、ヒープの末尾と交換
-        arr[i], arr[0] = arr[0], arr[i]
+    # 左右のリストを比較し、小さい方を結果リストに追加。
+    while len(left) > 0 and len(right) > 0:
+        if left[0] < right[0]:
+            merged_list.append(left[0])
+            left.pop(0)
+        else:
+            merged_list.append(right[0])
+            right.pop(0)
+            
         
-        # 交換後の縮小したヒープ（サイズi）に対して、根（0）からheapifyを適用し
-        # 再び最大ヒープを構築する
-        heapify(arr, i, 0)
-    
-    return arr
+    # どちらかのリストが空になったら残り要素をすべて追加する。
+    merged_list.extend(left)
+    merged_list.extend(right)
 
-# --- 実行例 ---
-if __name__ == '__main__':
-    my_list = [4, 10, 3, 5, 1, 9, 7]
-    
-    print(f"ソート前のリスト: {my_list}")
-    
-    # ヒープソートを実行
-    sorted_list = heap_sort(my_list)
-    
-    print(f"ソート後のリスト: {sorted_list}")
+    return merged_list
+
+
+import random
+
+if __name__ == "__main__":
+    data = [round(random.random() * 100) for _ in range(10)]
+    print(data)
+    print(merge_sort(data))

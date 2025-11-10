@@ -2,31 +2,35 @@ import torch
 from model import DQN  # model.py からDQNクラスをインポート
 
 # --- 設定 ---
-BOARD_SIZE = 7
-PATH_TO_PTH_FILE = "fliptac_dqn_final.pth"  # あなたの学習済みモデルのパス
-OUTPUT_ONNX_FILE = "fliptac_model.onnx"
+# 1. 盤面サイズを5x5に変更
+BOARD_SIZE = 5
+
+# 2. 読み込む学習済みモデルのファイル名を指定
+PATH_TO_PTH_FILE = "fliptac_dqn_5x5_final.pth"
+
+# 3. 出力するONNXモデルのファイル名を指定
+OUTPUT_ONNX_FILE = "fliptac_model_5x5.onnx"
 
 # --- 実行 ---
 if __name__ == '__main__':
-    # 1. モデルのインスタンスを作成
+    # モデルのインスタンスを作成
     device = torch.device("cpu")
     model = DQN(BOARD_SIZE, BOARD_SIZE).to(device)
 
-    # 2. 学習済みチェックポイントを読み込む
+    # 学習済みチェックポイントを読み込む
     checkpoint = torch.load(PATH_TO_PTH_FILE, map_location=device)
 
-    # ▼▼▼ ここからが修正箇所 ▼▼▼
-    # 新しい形式のチェックポイントから、モデルの重みデータを取り出す
-    # 'policy_net_state_dict' というキーを指定する
+    # ▼▼▼ ここが重要な修正箇所です ▼▼▼
+    # 新しい形式のチェックポイント（辞書）から、モデルの重みデータを取り出す
     model.load_state_dict(checkpoint['policy_net_state_dict'])
     # ▲▲▲ 修正ここまで ▲▲▲
     
     model.eval() # 推論モードに設定
 
-    # 3. ONNXエクスポートのためのダミー入力データを作成
+    # ONNXエクスポートのためのダミー入力データを作成 (サイズを5x5に変更)
     dummy_input = torch.randn(1, 3, BOARD_SIZE, BOARD_SIZE, device=device)
 
-    # 4. ONNX形式にエクスポート
+    # ONNX形式にエクスポート
     torch.onnx.export(model,
                       dummy_input,
                       OUTPUT_ONNX_FILE,
